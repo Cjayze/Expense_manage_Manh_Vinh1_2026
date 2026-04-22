@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'models/transaction.dart';
+import 'services/list_transaction.dart';
+import 'services/generic_class.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,28 +23,28 @@ class HomeScreen extends StatelessWidget {
   double income = 3000000;
   double expense = 2000000;
 
-  List<Map<String, dynamic>> transactions = [
-    {"title": "Ăn uống", "amount": -50000},
-    {"title": "Mua sắm", "amount": -200000},
-    {"title": "Lương", "amount": 3000000},
-    {"title": "Di chuyển", "amount": -30000},
-  ];
+  final manager = ListTransaction();
+
+  HomeScreen() {
+    manager.create(Transaction(id: 1, title: "Ăn uống", amount: -50000));
+    manager.create(Transaction(id: 2, title: "Mua sắm", amount: -200000));
+    manager.create(Transaction(id: 3, title: "Lương", amount: 3000000));
+  }
 
   @override
   Widget build(BuildContext context) {
+
+    var data = manager.read();
+    var generic = GenericClass<List<Transaction>>(data);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Quản lý chi tiêu"),
-      ),
+      appBar: AppBar(title: Text("Quản lý chi tiêu")),
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            Text("Số dư: $balance đ", style: TextStyle(fontSize: 20)),
-
-            SizedBox(height: 10),
+            Text("Số dư: $balance đ"),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -53,26 +56,20 @@ class HomeScreen extends StatelessWidget {
 
             SizedBox(height: 20),
 
-            Text("Danh sách giao dịch:", style: TextStyle(fontSize: 18)),
-
-            SizedBox(height: 10),
-
             Column(
-              children: transactions.map((item) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(item["title"]),
-                      Text(
-                        "${item["amount"]} đ",
-                        style: TextStyle(
-                          color: item["amount"] > 0 ? Colors.green : Colors.red,
-                        ),
+              children: generic.obj.map((item) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("ID: ${item.id}"),
+                    Text(item.title),
+                    Text(
+                      "${item.amount} đ",
+                      style: TextStyle(
+                        color: item.amount > 0 ? Colors.green : Colors.red,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               }).toList(),
             )
