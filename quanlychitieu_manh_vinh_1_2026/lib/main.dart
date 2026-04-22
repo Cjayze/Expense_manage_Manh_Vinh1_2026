@@ -1,7 +1,25 @@
 import 'package:flutter/material.dart';
+import 'services/category_manager.dart';
+import 'models/category.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class MyGeneric<T> {
+  T obj;
+
+  MyGeneric(this.obj);
+
+  void printData() {
+    if (obj is List<Map<String, String>>) {
+      for (var item in obj as List<Map<String, String>>) {
+        print('${item['studentID']} - ${item['fullname']}');
+      }
+    } else {
+      print(obj);
+    }
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -28,7 +46,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  //bai thuc hanh so 3
+  final List<Map<String, String>> students = [
+    {'studentID': 's123456', 'fullname': 'Nguyen Thi B'},
+    {'studentID': 's345672', 'fullname': 'Nguyen Van D'},
+    {'studentID': 's923333', 'fullname': 'Tran Thi Van'},
+  ];
+  final manager = CategoryManager();
 
+  //bai thuc hanh so 2
   //1. Biến
   String userName = "Đỗ Xuân Vinh";
   double totalMoney = 5000;
@@ -58,7 +84,51 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    // bai thuc hanh so 3
+    final genericObj = MyGeneric<List<Map<String, String>>>(students);
+    genericObj.printData();
+      // create
+    manager.createCategory(
+      Category(id: 1, name: "Ăn uống", icon: "Ăn uống", type: "expense"),
+    );
+
+    manager.createCategory(
+      Category(id: 2, name: "Lương", icon: "Lương", type: "income"),
+    );
+    
+    manager.createCategory(
+      Category(id: 3, name: "Thưởng", icon: "Thưởng", type: "income")
+    );
+
+      // read 
+    print("Catehory list");
+    for (var c in manager.getAllCategories()) {
+      c.display();
+    }
+
+      // update
+    manager.updateCategory(1, name: "Ăn uống hàng ngày", icon: "Food");
+
+    print("Update ID=1");
+    for (var c in manager.getAllCategories()) {
+      c.display();
+    }
+
+      // delete
+    manager.deleteCategory(2);
+    print("Delete ID=2");
+    for (var c in manager.getAllCategories()) {
+      c.display();
+    }
+
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -141,8 +211,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 for (var w in wallets)
                   Row(
                     children: [
-                      Expanded(flex: 1, child: Text('${w["id"]}', )),
-                      Expanded(flex: 3, child: Text(w["name"], textAlign: TextAlign.right),),
+                      Expanded(flex: 1, child: Text('${w["id"]}')),
+                      Expanded(
+                        flex: 3,
+                        child: Text(w["name"], textAlign: TextAlign.right),
+                      ),
                     ],
                   ),
               ],
