@@ -1,33 +1,4 @@
-# Quan_li_chi_tieu_Manh_Vinh_Tuan_1_2026
-group_project
-
-
-
-## 📌 Giới thiệu
-Ứng dụng quản lý chi tiêu cá nhân được xây dựng bằng Flutter.
-
-## 👨‍💻 Thành viên
-- Manh
-- Vinh
-- Tuan
-
-## 🚀 Chức năng
-- Hiển thị số dư, thu, chi
-- Danh sách giao dịch (List<Map>)
-- Sử dụng Generic Class
-- Xây dựng đối tượng Transaction
-- CRUD (Create, Read, Update, Delete)
-
-## 🛠️ Công nghệ
-- Flutter
-- Dart
-
-## 📂 Cấu trúc project
-lib/
- ├── main.dart
- ├── models/
- │    └── transaction.dart
- ├── services/
- │    ├── generic_class.dart
- │    └── list_transaction.dart
-
+Phân chia công việng, nhiệm vụ bài giữa kỳ:
+-Mạnh: HomeScreen
+-Vinh: ContentScreen
+-Tuấn: AboutScreen
