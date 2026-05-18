@@ -135,20 +135,6 @@ class ReportScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              margin: const EdgeInsets.all(16),
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.green[800],
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
-              ),
-              child: const Center(
-                child: Text(
-                  'Quảng cáo Grab',
-                  style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
           ],
         ),
       ),
