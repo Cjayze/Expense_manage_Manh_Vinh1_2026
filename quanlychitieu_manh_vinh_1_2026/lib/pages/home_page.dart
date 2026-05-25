@@ -1,23 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/category.dart';
-import '../services/category_manager.dart';
+import '../models/expense_record.dart';
+import '../models/income_record.dart';
+import '../services/generic_crud.dart';
 import '../widgets/common_header.dart';
-
-class MyGeneric<T> {
-  T obj;
-
-  MyGeneric(this.obj);
-
-  void printData() {
-    if (obj is List<Map<String, String>>) {
-      for (var item in obj as List<Map<String, String>>) {
-        print('${item['studentID']} - ${item['fullname']}');
-      }
-    } else {
-      print(obj);
-    }
-  }
-}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,71 +12,75 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Map<String, String>> students = [
-    {'studentID': 's123456', 'fullname': 'Nguyen Thi B'},
-    {'studentID': 's345672', 'fullname': 'Nguyen Van D'},
-    {'studentID': 's923333', 'fullname': 'Tran Thi Van'},
-  ];
-  final manager = CategoryManager();
+  final GenericCrud<ExpenseRecord> expenseRepo = GenericCrud<ExpenseRecord>();
+  final GenericCrud<IncomeRecord> incomeRepo = GenericCrud<IncomeRecord>();
 
-  String userName = 'Do Xuan Vinh';
-  double totalMoney = 5000;
-  bool isSaving = true;
+  double get totalExpense {
+    return expenseRepo
+        .getAll()
+        .fold(0, (sum, item) => sum + item.amount);
+  }
 
-  final List<Map<String, dynamic>> expenses = [
-    {"name": "An sang", "amount": 30, "date": DateTime(2026, 4, 10)},
-    {"name": "Game", "amount": 50, "date": DateTime(2026, 4, 11)},
-    {"name": "Mua sam", "amount": 100, "date": DateTime(2026, 4, 12)},
-  ];
-
-  final List<Map<String, dynamic>> wallets = [
-    {'id': 1, 'name': 'Vi tien mat'},
-    {'id': 2, 'name': 'Ngan hang'},
-    {'id': 3, 'name': 'Momo'},
-  ];
-
-  double get totalSpent {
-    double sum = 0;
-    for (var item in expenses) {
-      sum += item["amount"];
-    }
-    return sum;
+  double get totalIncome {
+    return incomeRepo
+        .getAll()
+        .fold(0, (sum, item) => sum + item.gross());
   }
 
   @override
   void initState() {
     super.initState();
-
-    final genericObj = MyGeneric<List<Map<String, String>>>(students);
-    genericObj.printData();
-
-    manager.createCategory(
-      Category(id: 1, name: "An uong", icon: "An uong", type: "expense"),
+    expenseRepo.create(
+      ExpenseRecord(
+        id: 1,
+        title: 'An sang',
+        category: 'An uong',
+        amount: 30,
+        date: DateTime(2026, 4, 10),
+      ),
     );
-    manager.createCategory(
-      Category(id: 2, name: "Luong", icon: "Luong", type: "income"),
+    expenseRepo.create(
+      ExpenseRecord(
+        id: 2,
+        title: 'Game',
+        category: 'Giai tri',
+        amount: 50,
+        date: DateTime(2026, 4, 11),
+      ),
     );
-    manager.createCategory(
-      Category(id: 3, name: "Thuong", icon: "Thuong", type: "income"),
+    expenseRepo.update(
+      ExpenseRecord(
+        id: 2,
+        title: 'Game online',
+        category: 'Giai tri',
+        amount: 55,
+        date: DateTime(2026, 4, 11),
+      ),
     );
 
-    print("Catehory list");
-    for (var c in manager.getAllCategories()) {
-      c.display();
-    }
+    incomeRepo.create(
+      IncomeRecord(
+        id: 1,
+        source: 'Luong part-time',
+        hours: 12,
+        rate: 40,
+        isBonus: false,
+      ),
+    );
+    incomeRepo.create(
+      IncomeRecord(
+        id: 2,
+        source: 'Thuong du an',
+        hours: 5,
+        rate: 60,
+        isBonus: true,
+      ),
+    );
+    incomeRepo.delete(99);
+  }
 
-    manager.updateCategory(1, name: "An uong hang ngay", icon: "Food");
-
-    print("Update ID=1");
-    for (var c in manager.getAllCategories()) {
-      c.display();
-    }
-
-    manager.deleteCategory(2);
-    print("Delete ID=2");
-    for (var c in manager.getAllCategories()) {
-      c.display();
-    }
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 
   @override
@@ -111,77 +100,65 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('User: $userName'),
-                  Text('Tong tien: $totalMoney'),
-                  Text('Da chi: $totalSpent'),
-                  Text(isSaving ? 'Dang tiet kiem' : 'Tieu qua tay'),
+                  Text('Tong chi tieu: $totalExpense'),
+                  Text('Tong thu nhap: $totalIncome'),
                   const SizedBox(height: 20),
-                  const Text('Danh sach chi tieu:'),
-                  const SizedBox(height: 8),
-                  const Row(
-                    children: [
-                      Expanded(flex: 3, child: Text('Ten')),
-                      Expanded(
-                        flex: 2,
-                        child: Text('Tien', textAlign: TextAlign.center),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text('Ngay', textAlign: TextAlign.right),
-                      ),
-                    ],
+                  Text(
+                    'Danh sach chi tieu',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   Column(
                     children: [
-                      for (var item in expenses)
-                        Row(
-                          children: [
-                            Expanded(flex: 3, child: Text(item["name"])),
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                '${item["amount"]}k',
-                                textAlign: TextAlign.center,
-                              ),
+                      for (final item in expenseRepo.getAll())
+                        Card(
+                          child: ListTile(
+                            title: Text(item.title),
+                            subtitle: Text(
+                              '${item.category} | ${_formatDate(item.date)}',
                             ),
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                '${item["date"].day}/${item["date"].month}',
-                                textAlign: TextAlign.right,
-                              ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('Tien: ${item.amount}k'),
+                                Text(
+                                  'Sau thue: ${item.amountWithTax(0.1).toStringAsFixed(1)}k',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Column(
-                    children: expenses.map((item) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Map: ${item["name"]}'),
-                          Text('${item["amount"]}k'),
-                        ],
-                      );
-                    }).toList(),
+                  Text(
+                    'Danh sach thu nhap',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Danh sach vi:'),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Column(
                     children: [
-                      for (var w in wallets)
-                        Row(
-                          children: [
-                            Expanded(flex: 1, child: Text('${w["id"]}')),
-                            Expanded(
-                              flex: 3,
-                              child: Text(w["name"], textAlign: TextAlign.right),
+                      for (final item in incomeRepo.getAll())
+                        Card(
+                          child: ListTile(
+                            title: Text(item.source),
+                            subtitle: Text(
+                              'Gio: ${item.hours} | Gio cong: ${item.rate}k',
                             ),
-                          ],
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(item.isBonus ? 'Co thuong' : 'Khong thuong'),
+                                Text(
+                                  'Tong: ${item.gross().toStringAsFixed(1)}k',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                     ],
                   ),
