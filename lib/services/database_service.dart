@@ -29,8 +29,8 @@ class DatabaseService {
   TransactionModel transaction,
 ) async {
   try {
-    print("========== FIREBASE TEST ==========");
-    print("UID: ${AuthService.uid}");
+    print("UID hien tai: ${AuthService.uid}");
+    print("Email: ${AuthService.currentEmail}");
 
     final box = getBox();
 

@@ -13,45 +13,25 @@ class _ReportScreenState extends State<ReportScreen> {
   bool isAnalysisTab = true;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('Báo cáo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: const Color(0xFF1E1E1E),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => isAnalysisTab = true),
-                      child: _buildSubTab("Phân tích", isAnalysisTab),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => isAnalysisTab = false),
-                      child: _buildSubTab("Tài khoản", !isAnalysisTab),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            isAnalysisTab ? _buildAnalysisContent() : _buildAccountContent(),
-          ],
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color(0xFF121212),
+    appBar: AppBar(
+      backgroundColor: const Color(0xFF1E1E1E),
+      title: const Text(
+        'Báo cáo',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
         ),
       ),
-    );
-  }
-
+      centerTitle: true,
+    ),
+    body: SingleChildScrollView(
+      child: _buildAnalysisContent(),
+    ),
+  );
+}
   Widget _buildSubTab(String text, bool isSelected) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
