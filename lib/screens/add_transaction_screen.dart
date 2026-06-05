@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import '../models/categories.dart';
 import '../models/transaction.dart';
-
+import '../services/database_service.dart' as db;
+import '../services/auth_service.dart';
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
 
@@ -73,7 +74,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
       dateTime: _selectedDate,
     );
 
-    await DatabaseService.addTransaction(newTx);
+  await db.DatabaseService.addTransaction(newTx);
     if (mounted) Navigator.pop(context);
   }
 

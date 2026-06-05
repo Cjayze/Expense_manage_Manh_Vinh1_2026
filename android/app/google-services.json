@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "92178457342",
+    "project_id": "so-thu-chi-ac609",
+    "storage_bucket": "so-thu-chi-ac609.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92178457342:android:c5399fdea3f3a586613baf",
+        "android_client_info": {
+          "package_name": "com.example.quanlychitieu_manh_vinh_1_2026"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCk0Xm6XhLDJW6e1OZM8vaH5GSWaNqddRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

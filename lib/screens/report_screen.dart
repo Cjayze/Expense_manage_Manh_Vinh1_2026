@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../services/report_service.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -64,39 +66,121 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Widget _buildAnalysisContent() {
-    return Column(
+
+  final now = DateTime.now();
+
+  final income =
+      ReportService.getTotalIncome(
+    now.month,
+    now.year,
+  );
+
+  final expense =
+      ReportService.getTotalExpense(
+    now.month,
+    now.year,
+  );
+
+  final balance =
+      income - expense;
+
+  final topCategory =
+      ReportService.getTopExpenseCategory(
+    now.month,
+    now.year,
+  );
+
+  final largestExpense =
+      ReportService.getLargestExpense(
+    now.month,
+    now.year,
+  );
+
+  final formatter =
+      NumberFormat(
+        "#,###",
+        "vi_VN",
+      );
+
+  return _buildCardWrapper(
+    child: Column(
+      crossAxisAlignment:
+          CrossAxisAlignment.start,
       children: [
-        _buildCardWrapper(
-          child: Column(
-            children: [
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Thống kê hàng tháng', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  Icon(Icons.chevron_right, color: Colors.grey),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: const [
-                      Text('Thg 5', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                      Icon(Icons.keyboard_arrow_down, color: Colors.white),
-                    ],
-                  ),
-                  _buildMiniData("Chi tiêu", "0"),
-                  _buildMiniData("Thu nhập", "0"),
-                ],
-              )
-            ],
+
+        Text(
+          "Báo cáo tháng ${now.month}/${now.year}",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        Text(
+          "Thu nhập: ${formatter.format(income)} đ",
+          style: const TextStyle(
+            color: Colors.green,
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        Text(
+          "Chi tiêu: ${formatter.format(expense)} đ",
+          style: const TextStyle(
+            color: Colors.red,
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        Text(
+          "Số dư: ${formatter.format(balance)} đ",
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+
+        const Divider(),
+
+        Text(
+          "Danh mục chi nhiều nhất",
+          style: const TextStyle(
+            color: Colors.grey,
+          ),
+        ),
+
+        Text(
+          topCategory,
+          style: const TextStyle(
+            color: Colors.amber,
+            fontSize: 18,
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        Text(
+          "Khoản chi lớn nhất",
+          style: const TextStyle(
+            color: Colors.grey,
+          ),
+        ),
+
+        Text(
+          "${formatter.format(largestExpense)} đ",
+          style: const TextStyle(
+            color: Colors.amber,
+            fontSize: 18,
           ),
         ),
       ],
-    );
-  }
-
+    ),
+  );
+}
   Widget _buildAccountContent() {
     return Column(
       children: [

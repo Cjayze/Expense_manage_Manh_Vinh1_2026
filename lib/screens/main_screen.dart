@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'home_screen.dart';
+import 'chart_screen.dart';
 import 'report_screen.dart';
 import 'profile_screen.dart';
 import 'add_transaction_screen.dart';
@@ -15,11 +17,11 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
-    const Center(child: Text('Màn hình Biểu đồ trống', style: TextStyle(color: Colors.grey))),
-    const ReportScreen(),
-    const ProfileScreen(),
-  ];
+  const HomeScreen(),
+  const ChartScreen(),
+  const ReportScreen(),
+  const ProfileScreen(),
+];
 
   @override
   Widget build(BuildContext context) {

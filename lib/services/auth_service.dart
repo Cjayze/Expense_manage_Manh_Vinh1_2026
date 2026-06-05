@@ -1,44 +1,76 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 class AuthService {
-  static const String _authBoxName = "auth_box";
-  static const String _isLoggedInKey = "is_logged_in";
-  static const String _usernameKey = "username";
-  static const String _emailKey = "email";
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  static final ValueNotifier<bool> isLoggedIn = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> isLoggedIn =
+      ValueNotifier<bool>(false);
+
   static String currentUsername = "Đăng nhập";
-  static String currentEmail = "Đăng nhập, thú vị hơn!";
+  static String currentEmail = "";
 
   static Future<void> init() async {
-    await Hive.openBox(_authBoxName);
-    final box = Hive.box(_authBoxName);
-    
-    isLoggedIn.value = box.get(_isLoggedInKey, defaultValue: false);
-    currentUsername = box.get(_usernameKey, defaultValue: "Đăng nhập");
-    currentEmail = box.get(_emailKey, defaultValue: "Đăng nhập, thú vị hơn!");
+    final user = _auth.currentUser;
+
+    if (user != null) {
+      isLoggedIn.value = true;
+      currentEmail = user.email ?? "";
+      currentUsername =
+          user.displayName ?? user.email ?? "Người dùng";
+    }
   }
 
-  static Future<void> login(String username, String email) async {
-    final box = Hive.box(_authBoxName);
-    await box.put(_isLoggedInKey, true);
-    await box.put(_usernameKey, username);
-    await box.put(_emailKey, email);
+  static Future<void> register(
+    String username,
+    String email,
+    String password,
+  ) async {
+    final credential =
+        await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    await credential.user!.updateDisplayName(username);
 
     currentUsername = username;
     currentEmail = email;
+
+    isLoggedIn.value = true;
+  }
+
+  static Future<void> login(
+    String email,
+    String password,
+  ) async {
+    final credential =
+        await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    currentUsername =
+        credential.user?.displayName ??
+        credential.user?.email ??
+        "";
+
+    currentEmail =
+        credential.user?.email ?? "";
+
     isLoggedIn.value = true;
   }
 
   static Future<void> logout() async {
-    final box = Hive.box(_authBoxName);
-    await box.put(_isLoggedInKey, false);
-    await box.put(_usernameKey, "Đăng nhập");
-    await box.put(_emailKey, "Đăng nhập, thú vị hơn!");
+    await _auth.signOut();
 
     currentUsername = "Đăng nhập";
-    currentEmail = "Đăng nhập, thú vị hơn!";
+    currentEmail = "";
+
     isLoggedIn.value = false;
+  }
+
+  static String? get uid {
+    return _auth.currentUser?.uid;
   }
 }

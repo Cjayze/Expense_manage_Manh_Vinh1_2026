@@ -14,8 +14,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int currentMonth = 5;
-  int currentYear = 2026;
+  late int currentMonth;
+  late int currentYear;
+
+@override
+void initState() {
+  super.initState();
+
+  currentMonth = DateTime.now().month;
+  currentYear = DateTime.now().year;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +105,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (loggedIn) return const SizedBox.shrink();
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
