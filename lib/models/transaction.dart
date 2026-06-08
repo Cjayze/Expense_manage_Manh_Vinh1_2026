@@ -38,6 +38,32 @@ class TransactionModel extends HiveObject {
     required this.note,
     required this.dateTime,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'type': type,
+      'categoryName': categoryName,
+      'categoryIconCode': categoryIconCode,
+      'categoryColorValue': categoryColorValue,
+      'amount': amount,
+      'note': note,
+      'dateTime': dateTime.toIso8601String(),
+    };
+  }
+
+  static TransactionModel fromMap(Map<String, dynamic> map) {
+    return TransactionModel(
+      id: map['id'] as String,
+      type: map['type'] as String,
+      categoryName: map['categoryName'] as String,
+      categoryIconCode: map['categoryIconCode'] as int,
+      categoryColorValue: map['categoryColorValue'] as int,
+      amount: (map['amount'] as num).toDouble(),
+      note: map['note'] as String,
+      dateTime: DateTime.parse(map['dateTime'] as String),
+    );
+  }
 }
 
 class DatabaseService {

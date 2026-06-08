@@ -9,6 +9,8 @@ class AuthService {
 
   static String currentUsername = "Đăng nhập";
   static String currentEmail = "";
+  // Test override for uid (used in unit tests)
+  static String? testUid;
 
   static Future<void> init() async {
     final user = _auth.currentUser;
@@ -71,6 +73,6 @@ class AuthService {
   }
 
   static String? get uid {
-    return _auth.currentUser?.uid;
+    return testUid ?? _auth.currentUser?.uid;
   }
 }
