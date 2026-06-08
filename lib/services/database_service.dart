@@ -58,6 +58,33 @@ class DatabaseService {
     print(e);
   }
 }
+  static Future<void> updateTransaction(
+  TransactionModel transaction,
+) async {
+  final box = getBox();
+
+  await box.put(
+    transaction.id,
+    transaction,
+  );
+
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(AuthService.uid)
+      .collection('transactions')
+      .doc(transaction.id)
+      .set({
+    'id': transaction.id,
+    'type': transaction.type,
+    'categoryName': transaction.categoryName,
+    'categoryIconCode': transaction.categoryIconCode,
+    'categoryColorValue': transaction.categoryColorValue,
+    'amount': transaction.amount,
+    'note': transaction.note,
+    'dateTime':
+        transaction.dateTime.toIso8601String(),
+  });
+}
 
   static Future<void> deleteTransaction(
     String id,
