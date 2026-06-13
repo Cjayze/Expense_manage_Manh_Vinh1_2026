@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../models/transaction.dart' hide DatabaseService;
 import '../services/database_service.dart';
-
+import '../widgets/user_avatar.dart';
 class ChartScreen extends StatefulWidget {
   const ChartScreen({super.key});
 
@@ -21,20 +21,15 @@ class _ChartScreenState extends State<ChartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final currencyFormat = NumberFormat("#,###", "vi_VN");
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E1E),
-        centerTitle: true,
-        title: const Text(
-          "Biểu đồ",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text("Biểu đồ"),
+        actions: const [
+          UserAvatar(),
+        ],
       ),
       body: ValueListenableBuilder(
         valueListenable: DatabaseService.getBox().listenable(),
@@ -84,7 +79,7 @@ class _ChartScreenState extends State<ChartScreen> {
                 margin:
                     const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -102,7 +97,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: isMonthView
-                                ? Colors.white
+                                ? theme.colorScheme.primaryContainer
                                 : Colors.transparent,
                             borderRadius:
                                 BorderRadius.circular(12),
@@ -112,8 +107,8 @@ class _ChartScreenState extends State<ChartScreen> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: isMonthView
-                                  ? Colors.black
-                                  : Colors.white,
+                                  ? theme.colorScheme.onPrimaryContainer
+                                  : theme.colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -133,7 +128,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: !isMonthView
-                                ? Colors.white
+                                ? theme.colorScheme.primaryContainer
                                 : Colors.transparent,
                             borderRadius:
                                 BorderRadius.circular(12),
@@ -143,8 +138,8 @@ class _ChartScreenState extends State<ChartScreen> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: !isMonthView
-                                  ? Colors.black
-                                  : Colors.white,
+                                  ? theme.colorScheme.onPrimaryContainer
+                                  : theme.colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -173,15 +168,12 @@ class _ChartScreenState extends State<ChartScreen> {
                           }
                         });
                       },
-                      icon: const Icon(
-                        Icons.chevron_left,
-                        color: Colors.white,
-                      ),
+                      icon: const Icon(Icons.chevron_left),
                     ),
                     Text(
                       "Tháng $selectedMonth/$selectedYear",
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -197,10 +189,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           }
                         });
                       },
-                      icon: const Icon(
-                        Icons.chevron_right,
-                        color: Colors.white,
-                      ),
+                      icon: const Icon(Icons.chevron_right),
                     ),
                   ],
                 )
@@ -215,15 +204,12 @@ class _ChartScreenState extends State<ChartScreen> {
                           selectedYear--;
                         });
                       },
-                      icon: const Icon(
-                        Icons.chevron_left,
-                        color: Colors.white,
-                      ),
+                      icon: const Icon(Icons.chevron_left),
                     ),
                     Text(
                       "Năm $selectedYear",
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -234,10 +220,7 @@ class _ChartScreenState extends State<ChartScreen> {
                           selectedYear++;
                         });
                       },
-                      icon: const Icon(
-                        Icons.chevron_right,
-                        color: Colors.white,
-                      ),
+                      icon: const Icon(Icons.chevron_right),
                     ),
                   ],
                 ),
@@ -287,8 +270,8 @@ class _ChartScreenState extends State<ChartScreen> {
                       Center(
                         child: Text(
                           "${currencyFormat.format(totalExpense)} đ",
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
                             fontSize: 22,
                             fontWeight:
                                 FontWeight.bold,
@@ -330,9 +313,7 @@ class _ChartScreenState extends State<ChartScreen> {
                             padding:
                                 const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: const Color(
-                                0xFF1E1E1E,
-                              ),
+                              color: theme.cardColor,
                               borderRadius:
                                   BorderRadius.circular(
                                 12,
@@ -372,10 +353,10 @@ class _ChartScreenState extends State<ChartScreen> {
                                             child: Text(
                                               item.key,
                                               style:
-                                                  const TextStyle(
-                                                color:
-                                                    Colors
-                                                        .white,
+                                                  TextStyle(
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurface,
                                                 fontSize:
                                                     17,
                                                 fontWeight:
@@ -387,10 +368,10 @@ class _ChartScreenState extends State<ChartScreen> {
                                           Text(
                                             "${percent.toStringAsFixed(1)}%",
                                             style:
-                                                const TextStyle(
-                                              color:
-                                                  Colors
-                                                      .white,
+                                                TextStyle(
+                                              color: theme
+                                                  .colorScheme
+                                                  .onSurface,
                                             ),
                                           ),
                                         ],
@@ -414,8 +395,7 @@ class _ChartScreenState extends State<ChartScreen> {
                                           minHeight:
                                               10,
                                           backgroundColor:
-                                              Colors.grey[
-                                                  800],
+                                              theme.dividerColor,
                                           valueColor:
                                               const AlwaysStoppedAnimation(
                                             Colors
@@ -437,9 +417,10 @@ class _ChartScreenState extends State<ChartScreen> {
                                     amount,
                                   ),
                                   style:
-                                      const TextStyle(
-                                    color:
-                                        Colors.white,
+                                      TextStyle(
+                                    color: theme
+                                        .colorScheme
+                                        .onSurface,
                                     fontSize: 16,
                                     fontWeight:
                                         FontWeight

@@ -81,16 +81,9 @@ class _EditTransactionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor:
-            const Color(0xFF1E1E1E),
         title: const Text(
           "Sửa giao dịch",
-          style: TextStyle(
-            color: Colors.white,
-          ),
         ),
       ),
       body: Padding(
@@ -103,9 +96,6 @@ class _EditTransactionScreenState
                   amountController,
               keyboardType:
                   TextInputType.number,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
               decoration:
                   const InputDecoration(
                 labelText: "Số tiền",
@@ -122,9 +112,6 @@ class _EditTransactionScreenState
             TextField(
               controller:
                   noteController,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
               decoration:
                   const InputDecoration(
                 labelText: "Ghi chú",

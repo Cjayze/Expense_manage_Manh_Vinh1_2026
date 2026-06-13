@@ -7,16 +7,18 @@ class NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.white : Colors.transparent,
+        color: isSelected ? theme.colorScheme.primaryContainer : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text, 
         style: TextStyle(
-          color: isSelected ? Colors.black : Colors.white, 
+          color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface,
           fontSize: 14
         ),
       ),

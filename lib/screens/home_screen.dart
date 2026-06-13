@@ -8,6 +8,8 @@ import '../services/database_service.dart';
 import '../widgets/month_year_picker.dart';
 import 'login_screen.dart';
 import 'edit_transaction_screen.dart';
+import 'profile_screen.dart';
+import '../widgets/user_avatar.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -46,12 +48,8 @@ class _HomeScreenState
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor:
-              const Color(0xFF1E1E1E),
           title: const Text(
             "Sửa giao dịch",
-            style:
-                TextStyle(color: Colors.white),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -60,9 +58,6 @@ class _HomeScreenState
                 controller: amountController,
                 keyboardType:
                     TextInputType.number,
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
                 decoration:
                     const InputDecoration(
                   labelText: "Số tiền",
@@ -74,9 +69,6 @@ class _HomeScreenState
               const SizedBox(height: 12),
               TextField(
                 controller: noteController,
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
                 decoration:
                     const InputDecoration(
                   labelText: "Ghi chú",
@@ -137,23 +129,17 @@ class _HomeScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final currencyFormat =
         NumberFormat("#,###", "vi_VN");
 
     return Scaffold(
-      backgroundColor:
-          const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor:
-            const Color(0xFF1E1E1E),
-        title: const Text(
-          'Sổ Thu Chi',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          title: const Text("Trang chủ"),
+          actions: const [
+            UserAvatar(),
+          ],
         ),
-      ),
       body: ValueListenableBuilder(
         valueListenable:
             DatabaseService.getBox()
@@ -206,8 +192,7 @@ class _HomeScreenState
                     const EdgeInsets.all(
                   16,
                 ),
-                color:
-                    const Color(0xFF1E1E1E),
+                color: theme.cardColor,
                 child: Column(
                   crossAxisAlignment:
                       CrossAxisAlignment
@@ -271,20 +256,22 @@ class _HomeScreenState
                               Text(
                                 'Thg $currentMonth',
                                 style:
-                                    const TextStyle(
-                                  color:
-                                      Colors.white,
+                                    TextStyle(
+                                  color: theme
+                                      .colorScheme
+                                      .onSurface,
                                   fontSize:
                                       22,
                                   fontWeight:
                                       FontWeight.bold,
                                 ),
                               ),
-                              const Icon(
+                              Icon(
                                 Icons
                                     .keyboard_arrow_down,
-                                color: Colors
-                                    .white,
+                                color: theme
+                                    .colorScheme
+                                    .onSurface,
                               ),
                             ],
                           ),
@@ -503,6 +490,8 @@ class _HomeScreenState
     String title,
     String value,
   ) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment:
           CrossAxisAlignment.end,
@@ -516,8 +505,8 @@ class _HomeScreenState
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
             fontWeight:
                 FontWeight.bold,
           ),

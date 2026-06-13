@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/report_service.dart';
-
+import '../widgets/user_avatar.dart';
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
 
@@ -15,17 +15,11 @@ class _ReportScreenState extends State<ReportScreen> {
   @override
 Widget build(BuildContext context) {
   return Scaffold(
-    backgroundColor: const Color(0xFF121212),
     appBar: AppBar(
-      backgroundColor: const Color(0xFF1E1E1E),
-      title: const Text(
-        'Báo cáo',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      centerTitle: true,
+      title: const Text("Báo cáo"),
+      actions: const [
+        UserAvatar(),
+      ],
     ),
     body: SingleChildScrollView(
       child: _buildAnalysisContent(),
@@ -33,19 +27,22 @@ Widget build(BuildContext context) {
   );
 }
   Widget _buildSubTab(String text, bool isSelected) {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.white : Colors.grey[855],
+        color: isSelected ? theme.colorScheme.primaryContainer : theme.cardColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
-        child: Text(text, style: TextStyle(color: isSelected ? Colors.black : Colors.white, fontWeight: FontWeight.bold)),
+        child: Text(text, style: TextStyle(color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
   Widget _buildAnalysisContent() {
+  final theme = Theme.of(context);
 
   final now = DateTime.now();
 
@@ -90,8 +87,8 @@ Widget build(BuildContext context) {
 
         Text(
           "Báo cáo tháng ${now.month}/${now.year}",
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -119,8 +116,8 @@ Widget build(BuildContext context) {
 
         Text(
           "Số dư: ${formatter.format(balance)} đ",
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
           ),
         ),
 
@@ -162,6 +159,8 @@ Widget build(BuildContext context) {
   );
 }
   Widget _buildAccountContent() {
+    final theme = Theme.of(context);
+
     return Column(
       children: [
         _buildCardWrapper(
@@ -170,7 +169,7 @@ Widget build(BuildContext context) {
             children: [
               const Text('Tài sản ròng', style: TextStyle(color: Colors.grey, fontSize: 14)),
               const SizedBox(height: 4),
-              const Text('0 đ', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+              Text('0 đ', style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 22, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -188,17 +187,17 @@ Widget build(BuildContext context) {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[850]),
+                  style: ElevatedButton.styleFrom(backgroundColor: theme.cardColor),
                   onPressed: () => _showAddAccountSheet(context),
-                  child: const Text('Thêm tài khoản', style: TextStyle(color: Colors.white)),
+                  child: Text('Thêm tài khoản', style: TextStyle(color: theme.colorScheme.onSurface)),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[850]),
+                  style: ElevatedButton.styleFrom(backgroundColor: theme.cardColor),
                   onPressed: () {},
-                  child: const Text('Quản lý tài khoản', style: TextStyle(color: Colors.white)),
+                  child: Text('Quản lý tài khoản', style: TextStyle(color: theme.colorScheme.onSurface)),
                 ),
               ),
             ],
@@ -212,7 +211,7 @@ Widget build(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       builder: (context) {
         return Padding(
           padding: EdgeInsets.only(
@@ -224,10 +223,10 @@ Widget build(BuildContext context) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Tên tài khoản', style: TextStyle(color: Colors.grey)),
-              const TextField(style: TextStyle(color: Colors.white)),
+              const TextField(),
               const SizedBox(height: 16),
               const Text('Số tiền', style: TextStyle(color: Colors.grey)),
-              const TextField(keyboardType: TextInputType.number, style: TextStyle(color: Colors.white)),
+              const TextField(keyboardType: TextInputType.number),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -246,10 +245,12 @@ Widget build(BuildContext context) {
   }
 
   Widget _buildCardWrapper({required Widget child}) {
+    final theme = Theme.of(context);
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(12)),
       child: child,
     );
   }
@@ -260,7 +261,7 @@ Widget build(BuildContext context) {
       children: [
         Text(title, style: const TextStyle(color: Colors.grey, fontSize: 13)),
         const SizedBox(height: 4),
-        Text(val, style: const TextStyle(color: Colors.white, fontSize: 15)),
+        Text(val, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 15)),
       ],
     );
   }

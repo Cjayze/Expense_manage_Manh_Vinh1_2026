@@ -1,22 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'edit_profile_screen.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../models/transaction.dart' hide DatabaseService;
 import 'login_screen.dart';
 import 'settings_screen.dart';
 
+class EditableAvatar extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const EditableAvatar({super.key, required this.child, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: child,
+      ),
+    );
+  }
+}
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: const Text("Tài khoản"),
-        backgroundColor: const Color(0xFF1E1E1E),
       ),
       body: ValueListenableBuilder<bool>(
         valueListenable: AuthService.isLoggedIn,
@@ -27,40 +49,136 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E),
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundColor: Colors.amber,
-                      child: Icon(
-                        loggedIn ? Icons.person : Icons.person_outline,
-                        color: Colors.black,
-                        size: 40,
+                    EditableAvatar(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const EditProfileScreen(),
+                          ),
+                        );
+                      },
+                      child: StreamBuilder<
+                          DocumentSnapshot<
+                              Map<String, dynamic>>>(
+                        stream: FirebaseFirestore
+                            .instance
+                            .collection('users')
+                            .doc(AuthService.uid ?? '')
+                            .snapshots(),
+                        builder: (
+                          context,
+                          snapshot,
+                        ) {
+                          final data =
+                              snapshot.data?.data();
+
+                          final avatarPath =
+                              data?['avatarPath'];
+
+                          final avatarUrl =
+                              data?['avatarUrl'];
+
+                          ImageProvider? image;
+
+                          if (avatarUrl != null &&
+                              avatarUrl
+                                  .toString()
+                                  .isNotEmpty) {
+                            image = NetworkImage(
+                              avatarUrl,
+                            );
+                          } else if (avatarPath !=
+                                  null &&
+                              avatarPath
+                                  .toString()
+                                  .isNotEmpty) {
+                            image = AssetImage(
+                              avatarPath,
+                            );
+                          }
+
+                          return CircleAvatar(
+                            radius: 35,
+                            backgroundColor:
+                                Colors.amber,
+                            backgroundImage:
+                                image,
+                            child: image == null
+                                ? const Icon(
+                                    Icons.person,
+                                    size: 40,
+                                    color:
+                                        Colors.black,
+                                  )
+                                : null,
+                          );
+                        },
                       ),
                     ),
+
                     const SizedBox(width: 16),
+
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AuthService.currentUsername,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            AuthService.currentEmail,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+                      child: StreamBuilder<
+                          DocumentSnapshot<
+                              Map<String, dynamic>>>(
+                        stream: FirebaseFirestore
+                            .instance
+                            .collection('users')
+                            .doc(AuthService.uid ?? '')
+                            .snapshots(),
+                        builder: (
+                          context,
+                          snapshot,
+                        ) {
+                          final data =
+                              snapshot.data?.data();
+
+                          final displayName =
+                              data?['displayName'] ??
+                                  AuthService
+                                      .currentUsername;
+
+                          final email =
+                              data?['email'] ??
+                                  AuthService
+                                      .currentEmail;
+
+                          return Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                            children: [
+                              Text(
+                                displayName,
+                                style: TextStyle(
+                                  color: theme
+                                      .colorScheme
+                                      .onSurface,
+                                  fontSize: 18,
+                                  fontWeight:
+                                      FontWeight
+                                          .bold,
+                                ),
+                              ),
+                              Text(
+                                email,
+                                style:
+                                    const TextStyle(
+                                  color:
+                                      Colors.grey,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -77,7 +195,8 @@ class ProfileScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const SettingsScreen(),
+                      builder: (_) =>
+                          const SettingsScreen(),
                     ),
                   );
                 },
@@ -97,30 +216,41 @@ class ProfileScreen extends StatelessWidget {
                 title: "Xóa toàn bộ dữ liệu",
                 iconColor: Colors.red,
                 onTap: () async {
-                  final confirm = await showDialog<bool>(
+                  final confirm =
+                      await showDialog<bool>(
                     context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Xác nhận"),
+                    builder: (_) =>
+                        AlertDialog(
+                      title:
+                          const Text("Xác nhận"),
                       content: const Text(
                         "Bạn có chắc muốn xóa toàn bộ giao dịch?",
                       ),
                       actions: [
                         TextButton(
                           onPressed: () =>
-                              Navigator.pop(context, false),
-                          child: const Text("Hủy"),
+                              Navigator.pop(
+                                  context,
+                                  false),
+                          child:
+                              const Text("Hủy"),
                         ),
                         TextButton(
                           onPressed: () =>
-                              Navigator.pop(context, true),
-                          child: const Text("Xóa"),
+                              Navigator.pop(
+                                  context,
+                                  true),
+                          child:
+                              const Text("Xóa"),
                         ),
                       ],
                     ),
                   );
 
                   if (confirm == true) {
-                    await DatabaseService.getBox().clear();
+                    await DatabaseService
+                        .getBox()
+                        .clear();
                   }
                 },
               ),
@@ -129,13 +259,16 @@ class ProfileScreen extends StatelessWidget {
 
               if (!loggedIn)
                 ElevatedButton.icon(
-                  icon: const Icon(Icons.login),
-                  label: const Text("Đăng nhập"),
+                  icon:
+                      const Icon(Icons.login),
+                  label:
+                      const Text("Đăng nhập"),
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => LoginScreen(),
+                        builder: (_) =>
+                            LoginScreen(),
                       ),
                     );
                   },
@@ -143,13 +276,18 @@ class ProfileScreen extends StatelessWidget {
 
               if (loggedIn)
                 ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                  style:
+                      ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Colors.red,
                   ),
-                  icon: const Icon(Icons.logout),
-                  label: const Text("Đăng xuất"),
+                  icon:
+                      const Icon(Icons.logout),
+                  label:
+                      const Text("Đăng xuất"),
                   onPressed: () async {
-                    await AuthService.logout();
+                    await AuthService
+                        .logout();
                   },
                 ),
             ],
@@ -168,21 +306,24 @@ class ProfileScreen extends StatelessWidget {
     VoidCallback? onTap,
   }) {
     return Card(
-      color: const Color(0xFF1E1E1E),
       child: ListTile(
-        leading: Icon(icon, color: iconColor),
-        title: Text(
-          title,
-          style: const TextStyle(color: Colors.white),
+        leading: Icon(
+          icon,
+          color: iconColor,
         ),
+        title: Text(title),
         subtitle: subtitle == null
             ? null
             : Text(
                 subtitle,
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(
+                  color: Colors.grey,
+                ),
               ),
         trailing: onTap != null
-            ? const Icon(Icons.chevron_right)
+            ? const Icon(
+                Icons.chevron_right,
+              )
             : null,
         onTap: onTap,
       ),

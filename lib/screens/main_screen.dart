@@ -25,6 +25,8 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       body: _screens[_selectedIndex],
       floatingActionButton: FloatingActionButton(
@@ -40,7 +42,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        color: const Color(0xFF1E1E1E),
+        color: theme.cardColor,
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
         child: SizedBox(
@@ -62,14 +64,18 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildNavItem(IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
+    final theme = Theme.of(context);
+    final color =
+        isSelected ? const Color(0xFFFFEB3B) : theme.hintColor;
+
     return InkWell(
       onTap: () => setState(() => _selectedIndex = index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? const Color(0xFFFFEB3B) : Colors.grey, size: 24),
+          Icon(icon, color: color, size: 24),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(color: isSelected ? const Color(0xFFFFEB3B) : Colors.grey, fontSize: 11)),
+          Text(label, style: TextStyle(color: color, fontSize: 11)),
         ],
       ),
     );

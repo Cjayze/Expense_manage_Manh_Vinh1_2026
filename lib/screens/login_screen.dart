@@ -94,15 +94,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
 Widget build(BuildContext context) {
+  final theme = Theme.of(context);
+
   return Scaffold(
-    backgroundColor: const Color(0xFF121212),
     appBar: AppBar(
-      backgroundColor: const Color(0xFF1E1E1E),
       elevation: 0,
       centerTitle: true,
       title: Text(
         _isLoginMode ? "Đăng nhập" : "Đăng ký tài khoản",
-        style: const TextStyle(color: Colors.white),
       ),
     ),
     body: _isLoading
@@ -131,16 +130,13 @@ Widget build(BuildContext context) {
                         children: [
                           TextField(
                             controller: _nameController,
-                            style: const TextStyle(
-                              color: Colors.white,
-                            ),
                             decoration: InputDecoration(
                               hintText: "Tên người dùng",
                               hintStyle: const TextStyle(
                                 color: Colors.grey,
                               ),
                               filled: true,
-                              fillColor: const Color(0xFF1E1E1E),
+                              fillColor: theme.cardColor,
                               border: OutlineInputBorder(
                                 borderRadius:
                                     BorderRadius.circular(10),
@@ -156,16 +152,13 @@ Widget build(BuildContext context) {
                       controller: _emailController,
                       keyboardType:
                           TextInputType.emailAddress,
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
                       decoration: InputDecoration(
                         hintText: "Email",
                         hintStyle: const TextStyle(
                           color: Colors.grey,
                         ),
                         filled: true,
-                        fillColor: const Color(0xFF1E1E1E),
+                        fillColor: theme.cardColor,
                         border: OutlineInputBorder(
                           borderRadius:
                               BorderRadius.circular(10),
@@ -179,16 +172,13 @@ Widget build(BuildContext context) {
                     TextField(
                       controller: _passwordController,
                       obscureText: true,
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
                       decoration: InputDecoration(
                         hintText: "Mật khẩu",
                         hintStyle: const TextStyle(
                           color: Colors.grey,
                         ),
                         filled: true,
-                        fillColor: const Color(0xFF1E1E1E),
+                        fillColor: theme.cardColor,
                         border: OutlineInputBorder(
                           borderRadius:
                               BorderRadius.circular(10),

@@ -34,6 +34,12 @@ dev_dependencies:
   hive_generator: ^2.0.1
   build_runner: ^2.4.8
 
+
+  image_picker: ^1.1.2
+  firebase_storage: ^13.0.0
+
 flutter:
   uses-material-design: true
 
+  assets:
+    - assets/avatars/

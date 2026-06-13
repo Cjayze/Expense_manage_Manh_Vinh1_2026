@@ -27,8 +27,10 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: theme.cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -39,15 +41,15 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.chevron_left, color: Colors.white),
+                  icon: const Icon(Icons.chevron_left),
                   onPressed: () => setState(() => selectedYear--),
                 ),
                 Text(
                   '$selectedYear',
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.chevron_right, color: Colors.white),
+                  icon: const Icon(Icons.chevron_right),
                   onPressed: () => setState(() => selectedYear++),
                 ),
               ],
@@ -77,7 +79,7 @@ class _MonthYearPickerState extends State<MonthYearPicker> {
                       child: Text(
                         'Thg $monthNumber',
                         style: TextStyle(
-                          color: isSelected ? Colors.black : Colors.white,
+                          color: isSelected ? Colors.black : theme.colorScheme.onSurface,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           fontSize: 14,
                         ),

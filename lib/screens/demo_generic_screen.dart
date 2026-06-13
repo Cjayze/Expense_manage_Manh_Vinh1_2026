@@ -42,11 +42,11 @@ class _DemoGenericScreenState extends State<DemoGenericScreen> {
   Widget build(BuildContext context) {
     final transactions = _transactionRepo.getAll();
     final savingGoals = _savingGoalRepo.getAll();
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Demo Tách Đối Tượng Generics'),
-        backgroundColor: const Color(0xFF1E1E1E),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -71,7 +71,7 @@ class _DemoGenericScreenState extends State<DemoGenericScreen> {
                 itemBuilder: (context, index) {
                   final item = transactions[index];
                   return Card(
-                    color: const Color(0xFF1E1E1E),
+                    color: theme.cardColor,
                     child: ListTile(
                       title: Text(item.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text('Danh mục: ${item.category}'),
@@ -108,7 +108,7 @@ class _DemoGenericScreenState extends State<DemoGenericScreen> {
                   final progress = goal.calculateProgress(); // Gọi phương thức hoạt động 1
 
                   return Card(
-                    color: const Color(0xFF1E1E1E),
+                    color: theme.cardColor,
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -129,7 +129,7 @@ class _DemoGenericScreenState extends State<DemoGenericScreen> {
                           // Hiển thị thanh tiến trình dựa trên thuộc tính kết hợp % hoạt động
                           LinearProgressIndicator(
                             value: progress,
-                            backgroundColor: Colors.grey[800],
+                            backgroundColor: theme.dividerColor,
                             color: progress >= 1.0 ? Colors.green : Colors.tealAccent,
                             minHeight: 8,
                           ),

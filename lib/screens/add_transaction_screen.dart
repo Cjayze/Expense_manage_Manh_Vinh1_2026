@@ -80,25 +80,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final currencyFormat = intl.NumberFormat("#,###", "vi_VN");
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1E1E),
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Hủy', style: TextStyle(color: Colors.white, fontSize: 16)),
+          child: const Text('Hủy', style: TextStyle(fontSize: 16)),
         ),
         title: TabBar(
           controller: _tabController,
           indicatorColor: Colors.amber,
-          labelColor: Colors.white,
+          labelColor: theme.colorScheme.onSurface,
           unselectedLabelColor: Colors.grey,
           tabs: const [Tab(text: "Chi tiêu"), Tab(text: "Thu nhập")],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_month_outlined, color: Colors.white),
+            icon: const Icon(Icons.calendar_month_outlined),
             onPressed: () async {
               final picked = await showDatePicker(
                 context: context,
@@ -124,7 +123,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: const Color(0xFF1E1E1E),
+            color: theme.cardColor,
             child: Row(
               children: [
                 const Icon(Icons.assignment_outlined, color: Colors.grey),
@@ -133,12 +132,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
                   child: TextField(
                     controller: _noteController,
                     decoration: const InputDecoration(hintText: "Nhập ghi chú...", border: InputBorder.none),
-                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
                 Text(
                   currencyFormat.format(double.tryParse(_amountStr) ?? 0),
-                  style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 26, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -150,6 +148,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
   }
 
   Widget _buildCategoryGrid(List<CategoryItem> categories) {
+    final theme = Theme.of(context);
+
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 16, crossAxisSpacing: 16),
@@ -163,11 +163,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: isSelected ? cat.color : Colors.grey[850], shape: BoxShape.circle),
-                child: Icon(cat.icon, color: isSelected ? Colors.black : Colors.white, size: 24),
+                decoration: BoxDecoration(color: isSelected ? cat.color : theme.cardColor, shape: BoxShape.circle),
+                child: Icon(cat.icon, color: isSelected ? Colors.black : theme.colorScheme.onSurface, size: 24),
               ),
               const SizedBox(height: 6),
-              Text(cat.name, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis),
+              Text(cat.name, style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface), overflow: TextOverflow.ellipsis),
             ],
           ),
         );
@@ -176,9 +176,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
   }
 
   Widget _buildCustomKeyboard() {
+    final theme = Theme.of(context);
     final List<String> keys = ["7", "8", "9", "⌫", "4", "5", "6", "+", "1", "2", "3", "-", "C", "0", ".", "✓"];
     return Container(
-      color: const Color(0xFF151515),
+      color: theme.cardColor,
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -189,11 +190,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
           return InkWell(
             onTap: () => text == "✓" ? _saveTransaction() : _onKeyPress(text),
             child: Container(
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey[900]!, width: 0.5)),
+              decoration: BoxDecoration(border: Border.all(color: theme.dividerColor, width: 0.5)),
               child: Center(
                 child: Text(
                   text,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: text == "✓" ? Colors.amber : Colors.white),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: text == "✓" ? Colors.amber : theme.colorScheme.onSurface),
                 ),
               ),
             ),
