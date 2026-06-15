@@ -5,8 +5,6 @@ Phân chia công việng, nhiệm vụ bài giữa kỳ:
 
 -Vinh: ContentScreen
 
--Tuấn: AboutScreen
-=======
 # quanlychitieu_manh_vinh_1_2026
 
 A new Flutter project.
