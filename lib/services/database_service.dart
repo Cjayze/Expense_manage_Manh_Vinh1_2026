@@ -11,6 +11,62 @@ class DatabaseService {
     return Hive.box<TransactionModel>(_boxName);
   }
 
+  static List<TransactionModel> getFilteredTransactions({
+    required int month,
+    required int year,
+  }) {
+    final box = getBox();
+    return box.values
+        .where(
+          (tx) =>
+              tx.dateTime.month == month &&
+              tx.dateTime.year == year,
+        )
+        .toList()
+      ..sort(
+        (a, b) => b.dateTime.compareTo(a.dateTime),
+      );
+  }
+
+  static Map<String, dynamic> getMonthSummary({
+    required List<TransactionModel> transactions,
+  }) {
+    double totalIncome = 0;
+    double totalExpense = 0;
+
+    for (final tx in transactions) {
+      if (tx.type == 'Thu nhập') {
+        totalIncome += tx.amount;
+      } else {
+        totalExpense += tx.amount;
+      }
+    }
+
+    final balance = totalIncome - totalExpense;
+    final savingRate = totalIncome <= 0
+        ? 0.0
+        : (balance / totalIncome).clamp(0.0, 1.0);
+
+    String insightMessage;
+    if (totalIncome == 0 && totalExpense == 0) {
+      insightMessage = 'Bạn chưa có dữ liệu trong tháng này. Hãy thêm giao dịch đầu tiên.';
+    } else if (balance < 0) {
+      insightMessage = 'Chi tiêu đang vượt thu nhập. Bạn nên kiểm soát lại các khoản chi.';
+    } else if (totalIncome > 0 && totalExpense / totalIncome > 0.8) {
+      insightMessage = 'Bạn đang dùng hơn 80% thu nhập. Hãy cân nhắc giảm chi tiêu.';
+    } else {
+      insightMessage = 'Bạn vẫn đang kiểm soát tốt dòng tiền trong tháng này.';
+    }
+
+    return {
+      'totalIncome': totalIncome,
+      'totalExpense': totalExpense,
+      'balance': balance,
+      'savingRate': savingRate,
+      'insightMessage': insightMessage,
+    };
+  }
+
   static Future<void> init() async {
     await Hive.initFlutter();
 
