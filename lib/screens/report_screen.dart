@@ -26,21 +26,6 @@ Widget build(BuildContext context) {
     ),
   );
 }
-  Widget _buildSubTab(String text, bool isSelected) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? theme.colorScheme.primaryContainer : theme.cardColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(text, style: TextStyle(color: isSelected ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface, fontWeight: FontWeight.bold)),
-      ),
-    );
-  }
-
   Widget _buildAnalysisContent() {
   final theme = Theme.of(context);
 
@@ -158,91 +143,6 @@ Widget build(BuildContext context) {
     ),
   );
 }
-  Widget _buildAccountContent() {
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        _buildCardWrapper(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Tài sản ròng', style: TextStyle(color: Colors.grey, fontSize: 14)),
-              const SizedBox(height: 4),
-              Text('0 đ', style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text('Tài sản: 0', style: TextStyle(color: Colors.green)),
-                  Text('Nợ phải trả: 0', style: TextStyle(color: Colors.redAccent)),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: theme.cardColor),
-                  onPressed: () => _showAddAccountSheet(context),
-                  child: Text('Thêm tài khoản', style: TextStyle(color: theme.colorScheme.onSurface)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: theme.cardColor),
-                  onPressed: () {},
-                  child: Text('Quản lý tài khoản', style: TextStyle(color: theme.colorScheme.onSurface)),
-                ),
-              ),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-
-  void _showAddAccountSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16, right: 16, top: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Tên tài khoản', style: TextStyle(color: Colors.grey)),
-              const TextField(),
-              const SizedBox(height: 16),
-              const Text('Số tiền', style: TextStyle(color: Colors.grey)),
-              const TextField(keyboardType: TextInputType.number),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Lưu', style: TextStyle(color: Colors.black)),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildCardWrapper({required Widget child}) {
     final theme = Theme.of(context);
@@ -252,17 +152,6 @@ Widget build(BuildContext context) {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(12)),
       child: child,
-    );
-  }
-
-  Widget _buildMiniData(String title, String val) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(title, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-        const SizedBox(height: 4),
-        Text(val, style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 15)),
-      ],
     );
   }
 }
