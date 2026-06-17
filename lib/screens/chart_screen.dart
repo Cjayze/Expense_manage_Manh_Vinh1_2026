@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
-import '../models/transaction.dart' hide DatabaseService;
+import '../models/transaction.dart';
 import '../services/database_service.dart';
 import '../widgets/user_avatar.dart';
 class ChartScreen extends StatefulWidget {

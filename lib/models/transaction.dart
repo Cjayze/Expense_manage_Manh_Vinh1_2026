@@ -64,28 +64,4 @@ class TransactionModel extends HiveObject {
       dateTime: DateTime.parse(map['dateTime'] as String),
     );
   }
-}
-
-class DatabaseService {
-  static const String _boxName = "transactions_box";
-
-  static Future<void> init() async {
-    await Hive.initFlutter();
-    if (!Hive.isAdapterRegistered(0)) {
-      Hive.registerAdapter(TransactionModelAdapter());
-    }
-    await Hive.openBox<TransactionModel>(_boxName);
-  }
-
-  static Box<TransactionModel> getBox() => Hive.box<TransactionModel>(_boxName);
-
-  static Future<void> addTransaction(TransactionModel tx) async {
-    final box = getBox();
-    await box.put(tx.id, tx);
-  }
-
-  static Future<void> deleteTransaction(String id) async {
-    final box = getBox();
-    await box.delete(id);
-  }
-}
+}

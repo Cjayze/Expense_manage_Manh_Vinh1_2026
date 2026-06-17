@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'edit_profile_screen.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
-import '../models/transaction.dart' hide DatabaseService;
 import 'login_screen.dart';
 import 'settings_screen.dart';
 

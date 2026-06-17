@@ -3,7 +3,6 @@ import 'package:intl/intl.dart' as intl;
 import '../models/categories.dart';
 import '../models/transaction.dart';
 import '../services/database_service.dart' as db;
-import '../services/auth_service.dart';
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
 
@@ -17,6 +16,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
   CategoryItem? _selectedCategory;
   final TextEditingController _noteController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -53,6 +53,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
   }
 
   Future<void> _saveTransaction() async {
+    if (_isSaving) return;
+
     final double parsedAmount = double.tryParse(_amountStr) ?? 0;
     if (parsedAmount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -61,21 +63,33 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> with Single
       return;
     }
 
-    final String currentType = _tabController.index == 0 ? "Chi tiêu" : "Thu nhập";
+    setState(() {
+      _isSaving = true;
+    });
 
-    final newTx = TransactionModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: currentType,
-      categoryName: _selectedCategory!.name,
-      categoryIconCode: _selectedCategory!.icon.codePoint,
-      categoryColorValue: _selectedCategory!.color.value,
-      amount: parsedAmount,
-      note: _noteController.text,
-      dateTime: _selectedDate,
-    );
+    try {
+      final String currentType = _tabController.index == 0 ? "Chi tiêu" : "Thu nhập";
 
-  await db.DatabaseService.addTransaction(newTx);
-    if (mounted) Navigator.pop(context);
+      final newTx = TransactionModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        type: currentType,
+        categoryName: _selectedCategory!.name,
+        categoryIconCode: _selectedCategory!.icon.codePoint,
+        categoryColorValue: _selectedCategory!.color.value,
+        amount: parsedAmount,
+        note: _noteController.text,
+        dateTime: _selectedDate,
+      );
+
+      await db.DatabaseService.addTransaction(newTx);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   @override
