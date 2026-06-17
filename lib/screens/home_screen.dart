@@ -11,6 +11,7 @@ import '../widgets/home/money_stat_card.dart';
 import '../widgets/home/recent_transaction_tile.dart';
 import '../widgets/month_year_picker.dart';
 import '../widgets/user_avatar.dart';
+import 'edit_transaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -51,8 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1015),
+      backgroundColor: isDark ? const Color(0xFF0D1015) : const Color(0xFFF3F4F6),
       body: SafeArea(
         child: ValueListenableBuilder(
           valueListenable: DatabaseService.getBox().listenable(),
@@ -96,24 +99,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
   Widget _buildTopBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
                 'Sổ Thu Chi',
                 style: TextStyle(
-                  color: Color(0xFFEDE6DA),
+                  color: isDark ? const Color(0xFFEDE6DA) : const Color(0xFF172033),
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -176,10 +179,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentTransactionsHeader() {
-    return const Text(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Text(
       'Giao dịch gần đây',
       style: TextStyle(
-        color: Color(0xFFEDE6DA),
+        color: isDark ? const Color(0xFFEDE6DA) : const Color(0xFF172033),
         fontSize: 22,
         fontWeight: FontWeight.w900,
       ),
@@ -187,11 +191,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTransactionList(List<TransactionModel> transactions) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (transactions.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF181B22),
+          color: isDark ? const Color(0xFF181B22) : Colors.white,
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Center(
@@ -209,7 +214,14 @@ class _HomeScreenState extends State<HomeScreen> {
           .map(
             (tx) => RecentTransactionTile(
               transaction: tx,
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EditTransactionScreen(transaction: tx),
+                  ),
+                );
+              },
               onDismissed: (_) async {
                 await DatabaseService.deleteTransaction(tx.id);
               },

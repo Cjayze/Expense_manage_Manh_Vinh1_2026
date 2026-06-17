@@ -20,6 +20,7 @@ class RecentTransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isExpense = transaction.type == 'Chi tiêu';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dismissible(
       key: Key(transaction.id),
@@ -45,8 +46,17 @@ class RecentTransactionTile extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF181B22),
+            color: isDark ? const Color(0xFF181B22) : Colors.white,
             borderRadius: BorderRadius.circular(18),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
@@ -68,8 +78,8 @@ class RecentTransactionTile extends StatelessWidget {
                   children: [
                     Text(
                       transaction.categoryName,
-                      style: const TextStyle(
-                        color: Color(0xFFF3F4F6),
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFFF3F4F6) : const Color(0xFF172033),
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -80,8 +90,8 @@ class RecentTransactionTile extends StatelessWidget {
                           : transaction.note,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF8E99AA),
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF8E99AA) : const Color(0xFF6C7890),
                         fontSize: 13,
                       ),
                     ),
