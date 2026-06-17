@@ -5,11 +5,15 @@ import '../../services/database_service.dart';
 
 class BudgetManagementSheet extends StatefulWidget {
   final Map<String, double> categoryExpenses;
+  final int month;
+  final int year;
   final VoidCallback onBudgetChanged;
 
   const BudgetManagementSheet({
     super.key,
     required this.categoryExpenses,
+    required this.month,
+    required this.year,
     required this.onBudgetChanged,
   });
 
@@ -64,8 +68,25 @@ class _BudgetManagementSheetState extends State<BudgetManagementSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final budgets = DatabaseService.getCategoryBudgets();
+    final budgets = DatabaseService.getCategoryBudgets(
+      month: widget.month,
+      year: widget.year,
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Tính toán thông tin tháng trước để hỗ trợ sao chép
+    int prevMonth = widget.month - 1;
+    int prevYear = widget.year;
+    if (prevMonth == 0) {
+      prevMonth = 12;
+      prevYear = widget.year - 1;
+    }
+    final prevMonthStr = prevMonth.toString().padLeft(2, '0');
+    final prevBudgets = DatabaseService.getCategoryBudgets(
+      month: prevMonth,
+      year: prevYear,
+    );
+    final bool canInherit = budgets.isEmpty && prevBudgets.isNotEmpty;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -86,13 +107,38 @@ class _BudgetManagementSheetState extends State<BudgetManagementSheet> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Quản lý ngân sách danh mục',
+              'Quản lý ngân sách',
               style: TextStyle(
                 color: isDark ? const Color(0xFFEDE6DA) : const Color(0xFF172033),
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
             ),
+            if (canInherit) ...[
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () async {
+                  for (final entry in prevBudgets.entries) {
+                    await DatabaseService.setCategoryBudget(
+                      categoryName: entry.key,
+                      limit: entry.value,
+                      month: widget.month,
+                      year: widget.year,
+                    );
+                  }
+                  setState(() {});
+                  widget.onBudgetChanged();
+                },
+                icon: const Icon(Icons.copy, size: 16, color: Colors.amber),
+                label: Text(
+                  'Sao chép ngân sách từ tháng $prevMonthStr/$prevYear',
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
@@ -131,8 +177,10 @@ class _BudgetManagementSheetState extends State<BudgetManagementSheet> {
                         );
                         if (newLimit != null) {
                           await DatabaseService.setCategoryBudget(
-                            category.name,
-                            newLimit,
+                            categoryName: category.name,
+                            limit: newLimit,
+                            month: widget.month,
+                            year: widget.year,
                           );
                           setState(() {});
                           widget.onBudgetChanged();

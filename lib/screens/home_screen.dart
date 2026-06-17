@@ -68,6 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
             final summary = DatabaseService.getMonthSummary(
               transactions: transactions,
+              month: _currentMonth,
+              year: _currentYear,
             );
 
             final totalIncome = summary['totalIncome'] as double;
@@ -109,8 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Budget Management ────────────────────────────────
-
   void _showBudgetManagementBottomSheet(Map<String, double> categoryExpenses) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
@@ -122,6 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       builder: (context) => BudgetManagementSheet(
         categoryExpenses: categoryExpenses,
+        month: _currentMonth,
+        year: _currentYear,
         onBudgetChanged: () {
           setState(() {});
         },
@@ -129,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── UI Builders ──────────────────────────────────────
 
   Widget _buildTopBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
