@@ -21,41 +21,71 @@ void main() {
   group('DatabaseService Budget Operations Test', () {
     test('Set and Get Category Budgets', () async {
       // Ban đầu, danh sách ngân sách phải trống
-      var budgets = DatabaseService.getCategoryBudgets();
+      var budgets = DatabaseService.getCategoryBudgets(month: 6, year: 2026);
       expect(budgets.isEmpty, true);
 
       // Thiết lập ngân sách cho "Đồ ăn"
-      await DatabaseService.setCategoryBudget('Đồ ăn', 2000000.0);
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Đồ ăn',
+        limit: 2000000.0,
+        month: 6,
+        year: 2026,
+      );
 
       // Xác minh ngân sách được thiết lập thành công
-      budgets = DatabaseService.getCategoryBudgets();
+      budgets = DatabaseService.getCategoryBudgets(month: 6, year: 2026);
       expect(budgets.length, 1);
       expect(budgets['Đồ ăn'], 2000000.0);
 
       // Thiết lập ngân sách cho "Mua sắm"
-      await DatabaseService.setCategoryBudget('Mua sắm', 5000000.0);
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Mua sắm',
+        limit: 5000000.0,
+        month: 6,
+        year: 2026,
+      );
 
       // Xác minh cả hai ngân sách đều tồn tại
-      budgets = DatabaseService.getCategoryBudgets();
+      budgets = DatabaseService.getCategoryBudgets(month: 6, year: 2026);
       expect(budgets.length, 2);
       expect(budgets['Đồ ăn'], 2000000.0);
       expect(budgets['Mua sắm'], 5000000.0);
 
       // Cập nhật ngân sách cho "Đồ ăn"
-      await DatabaseService.setCategoryBudget('Đồ ăn', 1500000.0);
-      budgets = DatabaseService.getCategoryBudgets();
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Đồ ăn',
+        limit: 1500000.0,
+        month: 6,
+        year: 2026,
+      );
+      budgets = DatabaseService.getCategoryBudgets(month: 6, year: 2026);
       expect(budgets['Đồ ăn'], 1500000.0);
 
       // Xóa ngân sách (đặt về 0) của "Mua sắm"
-      await DatabaseService.setCategoryBudget('Mua sắm', 0.0);
-      budgets = DatabaseService.getCategoryBudgets();
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Mua sắm',
+        limit: 0.0,
+        month: 6,
+        year: 2026,
+      );
+      budgets = DatabaseService.getCategoryBudgets(month: 6, year: 2026);
       expect(budgets.length, 1);
       expect(budgets.containsKey('Mua sắm'), false);
     });
 
     test('Budgets are persisted after closing and reopening settings box', () async {
-      await DatabaseService.setCategoryBudget('Đồ ăn', 1500000.0);
-      await DatabaseService.setCategoryBudget('Mua sắm', 3000000.0);
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Đồ ăn',
+        limit: 1500000.0,
+        month: 6,
+        year: 2026,
+      );
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Mua sắm',
+        limit: 3000000.0,
+        month: 6,
+        year: 2026,
+      );
 
       // Đóng box settings
       await Hive.box('settings').close();
@@ -64,15 +94,55 @@ void main() {
       await Hive.openBox('settings');
 
       // Xác minh các ngân sách vẫn tồn tại và có giá trị chính xác
-      final budgets = DatabaseService.getCategoryBudgets();
+      final budgets = DatabaseService.getCategoryBudgets(month: 6, year: 2026);
       expect(budgets['Đồ ăn'], 1500000.0);
       expect(budgets['Mua sắm'], 3000000.0);
     });
 
+    test('Budgets are isolated by month and year', () async {
+      // Đặt ngân sách tháng 06/2026
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Đồ ăn',
+        limit: 1000000.0,
+        month: 6,
+        year: 2026,
+      );
+
+      // Đặt ngân sách tháng 07/2026
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Đồ ăn',
+        limit: 2000000.0,
+        month: 7,
+        year: 2026,
+      );
+
+      // Xác minh ngân sách tháng 06/2026
+      var budgetsJune = DatabaseService.getCategoryBudgets(month: 6, year: 2026);
+      expect(budgetsJune['Đồ ăn'], 1000000.0);
+
+      // Xác minh ngân sách tháng 07/2026
+      var budgetsJuly = DatabaseService.getCategoryBudgets(month: 7, year: 2026);
+      expect(budgetsJuly['Đồ ăn'], 2000000.0);
+
+      // Xác minh ngân sách tháng 08/2026 (chưa đặt)
+      var budgetsAugust = DatabaseService.getCategoryBudgets(month: 8, year: 2026);
+      expect(budgetsAugust.isEmpty, true);
+    });
+
     test('getMonthSummary calculates correct totals and budget status', () async {
       // Thiết lập ngân sách: "Đồ ăn" -> 1.000.000, "Mua sắm" -> 2.000.000
-      await DatabaseService.setCategoryBudget('Đồ ăn', 1000000.0);
-      await DatabaseService.setCategoryBudget('Mua sắm', 2000000.0);
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Đồ ăn',
+        limit: 1000000.0,
+        month: 6,
+        year: 2026,
+      );
+      await DatabaseService.setCategoryBudget(
+        categoryName: 'Mua sắm',
+        limit: 2000000.0,
+        month: 6,
+        year: 2026,
+      );
 
       // Tạo một số giao dịch giả lập trong bộ nhớ
       final t1 = TransactionModel(
@@ -110,6 +180,8 @@ void main() {
 
       final summary = DatabaseService.getMonthSummary(
         transactions: [t1, t2, t3],
+        month: 6,
+        year: 2026,
       );
 
       expect(summary['totalIncome'], 5000000.0);
