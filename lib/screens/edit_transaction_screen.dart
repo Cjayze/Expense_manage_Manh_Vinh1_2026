@@ -19,6 +19,7 @@ class _EditTransactionScreenState
     extends State<EditTransactionScreen> {
   late TextEditingController amountController;
   late TextEditingController noteController;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -41,6 +42,8 @@ class _EditTransactionScreenState
   }
 
   Future<void> save() async {
+    if (_isSaving) return;
+
     final amount =
         double.tryParse(amountController.text);
 
@@ -55,26 +58,38 @@ class _EditTransactionScreenState
       return;
     }
 
-    final updated = TransactionModel(
-      id: widget.transaction.id,
-      type: widget.transaction.type,
-      categoryName:
-          widget.transaction.categoryName,
-      categoryIconCode:
-          widget.transaction.categoryIconCode,
-      categoryColorValue:
-          widget.transaction.categoryColorValue,
-      amount: amount,
-      note: noteController.text,
-      dateTime: widget.transaction.dateTime,
-    );
+    setState(() {
+      _isSaving = true;
+    });
 
-    await db.DatabaseService.updateTransaction(
-      updated,
-    );
+    try {
+      final updated = TransactionModel(
+        id: widget.transaction.id,
+        type: widget.transaction.type,
+        categoryName:
+            widget.transaction.categoryName,
+        categoryIconCode:
+            widget.transaction.categoryIconCode,
+        categoryColorValue:
+            widget.transaction.categoryColorValue,
+        amount: amount,
+        note: noteController.text,
+        dateTime: widget.transaction.dateTime,
+      );
 
-    if (mounted) {
-      Navigator.pop(context);
+      await db.DatabaseService.updateTransaction(
+        updated,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
