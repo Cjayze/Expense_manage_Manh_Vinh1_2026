@@ -29,11 +29,15 @@ class DatabaseService {
       );
   }
 
-  static Map<String, double> getCategoryBudgets() {
+  static Map<String, double> getCategoryBudgets({
+    required int month,
+    required int year,
+  }) {
     final box = Hive.box('settings');
     final Map<String, double> budgets = {};
+    final mStr = month.toString().padLeft(2, '0');
     for (final category in expenseCategories) {
-      final key = 'budget_${category.name}';
+      final key = 'budget_${year}_${mStr}_${category.name}';
       final limit = box.get(key);
       if (limit != null && limit is num && limit > 0) {
         budgets[category.name] = limit.toDouble();
@@ -42,9 +46,15 @@ class DatabaseService {
     return budgets;
   }
 
-  static Future<void> setCategoryBudget(String categoryName, double limit) async {
+  static Future<void> setCategoryBudget({
+    required String categoryName,
+    required double limit,
+    required int month,
+    required int year,
+  }) async {
     final box = Hive.box('settings');
-    final key = 'budget_$categoryName';
+    final mStr = month.toString().padLeft(2, '0');
+    final key = 'budget_${year}_${mStr}_$categoryName';
     if (limit <= 0) {
       await box.delete(key);
     } else {
@@ -55,7 +65,9 @@ class DatabaseService {
       try {
         final docRef = FirebaseFirestore.instance
             .collection('users')
-            .doc(AuthService.uid);
+            .doc(AuthService.uid)
+            .collection('monthly_budgets')
+            .doc('$year-$mStr');
         await docRef.set({
           'budgets': {
             categoryName: limit,
@@ -69,6 +81,8 @@ class DatabaseService {
 
   static Map<String, dynamic> getMonthSummary({
     required List<TransactionModel> transactions,
+    required int month,
+    required int year,
   }) {
     double totalIncome = 0;
     double totalExpense = 0;
@@ -89,7 +103,7 @@ class DatabaseService {
         ? 0.0
         : (balance / totalIncome).clamp(0.0, 1.0);
 
-    final categoryBudgets = getCategoryBudgets();
+    final categoryBudgets = getCategoryBudgets(month: month, year: year);
     double totalBudgetLimit = 0.0;
     int exceededCount = 0;
     double remainingBudgetsTotal = 0.0;
@@ -268,26 +282,32 @@ class DatabaseService {
       }
 
       // 2. Sync Budgets
-      final userDoc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(AuthService.uid)
-              .get();
+      final budgetSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(AuthService.uid)
+          .collection('monthly_budgets')
+          .get();
 
       final settingsBox = Hive.box('settings');
-      for (final category in expenseCategories) {
-        await settingsBox.delete('budget_${category.name}');
+
+      final keysToDelete = settingsBox.keys
+          .where((k) => k.toString().startsWith('budget_'))
+          .toList();
+      for (final key in keysToDelete) {
+        await settingsBox.delete(key);
       }
 
-      if (userDoc.exists) {
-        final userData = userDoc.data();
-        if (userData != null && userData.containsKey('budgets')) {
-          final budgetsMap = userData['budgets'];
+      for (var doc in budgetSnapshot.docs) {
+        final monthYear = doc.id; 
+        final data = doc.data();
+        if (data.containsKey('budgets')) {
+          final budgetsMap = data['budgets'];
           if (budgetsMap is Map) {
-            budgetsMap.forEach((key, value) {
+            final yMStr = monthYear.replaceAll('-', '_'); 
+            budgetsMap.forEach((categoryName, value) {
               final limit = (value as num?)?.toDouble() ?? 0.0;
               if (limit > 0) {
-                settingsBox.put('budget_$key', limit);
+                settingsBox.put('budget_${yMStr}_$categoryName', limit);
               }
             });
           }
