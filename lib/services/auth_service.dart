@@ -73,6 +73,11 @@ class AuthService {
   }
 
   static String? get uid {
-    return testUid ?? _auth.currentUser?.uid;
+    if (testUid != null) return testUid;
+    try {
+      return _auth.currentUser?.uid;
+    } catch (_) {
+      return null;
+    }
   }
 }
