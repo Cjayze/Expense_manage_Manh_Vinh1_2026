@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
-import '../models/transaction.dart' hide DatabaseService;
+import '../models/transaction.dart';
 import '../services/database_service.dart';
 import '../widgets/home/balance_summary_card.dart';
 import '../widgets/home/feature_card.dart';
 import '../widgets/home/insight_card.dart';
 import '../widgets/home/money_stat_card.dart';
 import '../widgets/home/recent_transaction_tile.dart';
+import '../widgets/home/budget_management_sheet.dart';
 import '../widgets/month_year_picker.dart';
 import '../widgets/user_avatar.dart';
 import 'edit_transaction_screen.dart';
@@ -74,6 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
             final balance = summary['balance'] as double;
             final savingRate = summary['savingRate'] as double;
             final insightMessage = summary['insightMessage'] as String;
+            final remainingBudget = summary['remainingBudget'] as double;
+            final exceededCount = summary['exceededCount'] as int;
+            final hasBudgets = summary['hasBudgets'] as bool;
+            final categoryExpenses = summary['categoryExpenses'] as Map<String, double>;
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 110),
@@ -84,7 +89,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 18),
                 _buildStatRow(totalIncome, totalExpense),
                 const SizedBox(height: 12),
-                _buildFeatureRow(),
+                _buildFeatureRow(
+                  hasBudgets,
+                  exceededCount,
+                  remainingBudget,
+                  categoryExpenses,
+                ),
                 const SizedBox(height: 18),
                 InsightCard(message: insightMessage),
                 const SizedBox(height: 28),
@@ -98,6 +108,28 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // ── Budget Management ────────────────────────────────
+
+  void _showBudgetManagementBottomSheet(Map<String, double> categoryExpenses) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? const Color(0xFF181B22) : const Color(0xFFF3F4F6),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) => BudgetManagementSheet(
+        categoryExpenses: categoryExpenses,
+        onBudgetChanged: () {
+          setState(() {});
+        },
+      ),
+    );
+  }
+
+  // ── UI Builders ──────────────────────────────────────
 
   Widget _buildTopBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -156,18 +188,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFeatureRow() {
+  Widget _buildFeatureRow(
+    bool hasBudgets,
+    int exceededCount,
+    double remainingBudget,
+    Map<String, double> categoryExpenses,
+  ) {
+    String budgetText;
+    if (!hasBudgets) {
+      budgetText = 'Chưa đặt';
+    } else if (exceededCount > 0) {
+      budgetText = 'Vượt $exceededCount d.mục!';
+    } else {
+      budgetText = 'Còn: ${_formatter.format(remainingBudget)} đ';
+    }
+
     return Row(
-      children: const [
+      children: [
         FeatureCard(
           title: 'Ngân sách',
-          subtitle: 'Theo dõi',
+          subtitle: budgetText,
           icon: Icons.account_balance_wallet,
-          backgroundColor: Color(0xFFDFF5FF),
-          iconColor: Color(0xFF0EA5E9),
+          backgroundColor: const Color(0xFFDFF5FF),
+          iconColor: const Color(0xFF0EA5E9),
+          onTap: () => _showBudgetManagementBottomSheet(categoryExpenses),
         ),
-        SizedBox(width: 12),
-        FeatureCard(
+        const SizedBox(width: 12),
+        const FeatureCard(
           title: 'Mục tiêu',
           subtitle: 'Tiết kiệm',
           icon: Icons.track_changes,
