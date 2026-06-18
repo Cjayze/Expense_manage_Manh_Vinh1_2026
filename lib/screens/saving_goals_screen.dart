@@ -90,7 +90,7 @@ class _SavingGoalsScreenState extends State<SavingGoalsScreen> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0D1015) : const Color(0xFFF3F4F6),
       appBar: AppBar(
-        title: Text('Mục tiêu tiết kiệm (${widget.month.toString().padLeft(2, '0')}/${widget.year})'),
+        title: Text('Mục tiêu tiết kiệm'),
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         foregroundColor: isDark ? Colors.white : Colors.black,
         elevation: 0,

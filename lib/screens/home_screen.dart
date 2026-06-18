@@ -14,6 +14,8 @@ import '../widgets/month_year_picker.dart';
 import '../widgets/user_avatar.dart';
 import 'edit_transaction_screen.dart';
 import 'saving_goals_screen.dart';
+import 'add_transaction_screen.dart';
+import '../widgets/home/quick_action_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,6 +111,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   exceededCount,
                   remainingBudget,
                   categoryExpenses,
+                ),
+                const SizedBox(height: 12),
+                QuickActionBar(
+                  onAddIncome: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddTransactionScreen(
+                          initialTabIndex: 1,
+                          initialDate: _getInitialDateForAdd(),
+                        ),
+                      ),
+                    ).then((_) {
+                      if (mounted) setState(() {});
+                    });
+                  },
+                  onAddExpense: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddTransactionScreen(
+                          initialTabIndex: 0,
+                          initialDate: _getInitialDateForAdd(),
+                        ),
+                      ),
+                    ).then((_) {
+                      if (mounted) setState(() {});
+                    });
+                  },
                 ),
                 const SizedBox(height: 18),
                 InsightCard(message: insightMessage),
@@ -272,6 +303,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
     );
+  }
+
+  DateTime _getInitialDateForAdd() {
+    final now = DateTime.now();
+    if (_currentMonth == now.month && _currentYear == now.year) {
+      return now;
+    } else {
+      return DateTime(_currentYear, _currentMonth, 1);
+    }
   }
 
   Widget _buildRecentTransactionsHeader() {
