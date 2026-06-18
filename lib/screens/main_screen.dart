@@ -4,7 +4,7 @@ import 'home_screen.dart';
 import 'chart_screen.dart';
 import 'report_screen.dart';
 import 'profile_screen.dart';
-import 'add_transaction_screen.dart';
+import 'qr_scanner_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -29,22 +29,8 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       body: _screens[_selectedIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddTransactionScreen()),
-          );
-        },
-        backgroundColor: const Color(0xFFFFEB3B),
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.black, size: 32),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         color: theme.cardColor,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
         child: SizedBox(
           height: 60,
           child: Row(
@@ -52,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               _buildNavItem(Icons.receipt_long, "Trang chủ", 0),
               _buildNavItem(Icons.pie_chart_outline, "Biểu đồ", 1),
-              const SizedBox(width: 40), 
+              _buildScanItem(),
               _buildNavItem(Icons.article_outlined, "Báo cáo", 2),
               _buildNavItem(Icons.person_outline, "Tôi", 3),
             ],
@@ -76,6 +62,33 @@ class _MainScreenState extends State<MainScreen> {
           Icon(icon, color: color, size: 24),
           const SizedBox(height: 4),
           Text(label, style: TextStyle(color: color, fontSize: 11)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScanItem() {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const QrScannerScreen()),
+        );
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFFEB3B),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.qr_code_scanner, color: Colors.black, size: 22),
+          ),
+          const SizedBox(height: 2),
+          const Text("Quét", style: TextStyle(color: Color(0xFFFFEB3B), fontSize: 11, fontWeight: FontWeight.bold)),
         ],
       ),
     );
