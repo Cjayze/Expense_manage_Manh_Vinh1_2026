@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/transaction.dart';
 import '../models/categories.dart';
+import '../models/financial_models.dart';
 import 'auth_service.dart';
 
 class DatabaseService {
@@ -157,6 +159,55 @@ class DatabaseService {
     await Hive.openBox<TransactionModel>(
       _boxName,
     );
+
+    await Hive.openBox('saving_goals_box');
+  }
+
+  static List<SavingGoal> getSavingGoals() {
+    final box = Hive.box('saving_goals_box');
+    return box.values
+        .map((val) => SavingGoal.fromMap(Map<String, dynamic>.from(val as Map)))
+        .toList();
+  }
+
+  static ValueListenable<Box> getSavingGoalsBoxListenable() {
+    return Hive.box('saving_goals_box').listenable();
+  }
+
+  static Future<void> addOrUpdateSavingGoal(SavingGoal goal) async {
+    final box = Hive.box('saving_goals_box');
+    await box.put(goal.id, goal.toMap());
+
+    if (AuthService.uid != null) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(AuthService.uid)
+            .collection('saving_goals')
+            .doc(goal.id)
+            .set(goal.toMap());
+      } catch (e) {
+        print('Firestore saving goal write error: $e');
+      }
+    }
+  }
+
+  static Future<void> deleteSavingGoal(String id) async {
+    final box = Hive.box('saving_goals_box');
+    await box.delete(id);
+
+    if (AuthService.uid != null) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(AuthService.uid)
+            .collection('saving_goals')
+            .doc(id)
+            .delete();
+      } catch (e) {
+        print('Firestore saving goal delete error: $e');
+      }
+    }
   }
 
   static Future<void> addTransaction(
@@ -312,6 +363,20 @@ class DatabaseService {
             });
           }
         }
+      }
+      // 3. Sync Saving Goals
+      final goalsSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(AuthService.uid)
+          .collection('saving_goals')
+          .get();
+
+      final goalsBox = Hive.box('saving_goals_box');
+      await goalsBox.clear();
+      for (var doc in goalsSnapshot.docs) {
+        final data = doc.data();
+        final goal = SavingGoal.fromMap(data);
+        await goalsBox.put(goal.id, goal.toMap());
       }
     } catch (e) {
       print(
