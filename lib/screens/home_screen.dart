@@ -13,6 +13,7 @@ import '../widgets/home/budget_management_sheet.dart';
 import '../widgets/month_year_picker.dart';
 import '../widgets/user_avatar.dart';
 import 'edit_transaction_screen.dart';
+import 'saving_goals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -87,7 +88,19 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _buildTopBar(),
                 const SizedBox(height: 24),
-                _buildBalanceCard(balance, savingRate),
+                ValueListenableBuilder(
+                  valueListenable: DatabaseService.getSavingGoalsBoxListenable(),
+                  builder: (context, box, _) {
+                    final goals = DatabaseService.getSavingGoals();
+                    double goalsAccumulated = 0.0;
+                    for (var g in goals) {
+                      if (g.isActiveIn(_currentMonth, _currentYear)) {
+                        goalsAccumulated += g.currentAmount;
+                      }
+                    }
+                    return _buildBalanceCard(balance, savingRate, goalsAccumulated);
+                  },
+                ),
                 const SizedBox(height: 18),
                 _buildStatRow(totalIncome, totalExpense),
                 const SizedBox(height: 12),
@@ -158,10 +171,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBalanceCard(double balance, double savingRate) {
+  Widget _buildBalanceCard(double balance, double savingRate, double goalsAccumulated) {
+    final availableBalance = balance - goalsAccumulated;
     return BalanceSummaryCard(
       monthText: 'Tháng $_currentMonth/$_currentYear',
-      balanceText: '${_formatter.format(balance)} đ',
+      availableText: '${_formatter.format(availableBalance)} đ',
+      goalsAccumulatedText: '${_formatter.format(goalsAccumulated)} đ',
+      totalAssetsText: '${_formatter.format(balance)} đ',
       savingRate: savingRate,
       onTapMonth: _pickMonthYear,
     );
@@ -215,12 +231,44 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () => _showBudgetManagementBottomSheet(categoryExpenses),
         ),
         const SizedBox(width: 12),
-        const FeatureCard(
-          title: 'Mục tiêu',
-          subtitle: 'Tiết kiệm',
-          icon: Icons.track_changes,
-          backgroundColor: Color(0xFFFFF1C7),
-          iconColor: Color(0xFFF97316),
+        ValueListenableBuilder(
+          valueListenable: DatabaseService.getSavingGoalsBoxListenable(),
+          builder: (context, box, _) {
+            final allGoals = DatabaseService.getSavingGoals();
+            final goals = allGoals.where((g) => g.isActiveIn(_currentMonth, _currentYear)).toList();
+            String goalsSubtitle;
+            if (goals.isEmpty) {
+              goalsSubtitle = 'Chưa đặt';
+            } else {
+              double totalProgress = 0.0;
+              for (var g in goals) {
+                totalProgress += g.calculateProgress();
+              }
+              final avgProgress = (totalProgress / goals.length) * 100;
+              goalsSubtitle = 'Đạt ${avgProgress.toStringAsFixed(0)}%';
+            }
+
+            return FeatureCard(
+              title: 'Mục tiêu',
+              subtitle: goalsSubtitle,
+              icon: Icons.track_changes,
+              backgroundColor: const Color(0xFFFFF1C7),
+              iconColor: const Color(0xFFF97316),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SavingGoalsScreen(
+                      month: _currentMonth,
+                      year: _currentYear,
+                    ),
+                  ),
+                ).then((_) {
+                  setState(() {});
+                });
+              },
+            );
+          },
         ),
       ],
     );

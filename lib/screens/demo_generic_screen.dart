@@ -24,17 +24,21 @@ class _DemoGenericScreenState extends State<DemoGenericScreen> {
     // Thêm dữ liệu mẫu cho Đối tượng 2 (Saving Goals)
     _savingGoalRepo.create(SavingGoal(
       id: "g1", 
-      goalName: "Mua Laptop mới", 
+      name: "Mua Laptop mới", 
       currentAmount: 15000000, 
       targetAmount: 20000000, 
       deadline: DateTime.now().add(const Duration(days: 30)),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     ));
     _savingGoalRepo.create(SavingGoal(
       id: "g2", 
-      goalName: "Quỹ khẩn cấp", 
+      name: "Quỹ khẩn cấp", 
       currentAmount: 5000000, 
       targetAmount: 5000000, 
       deadline: DateTime.now().subtract(const Duration(days: 2)),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     ));
   }
 
@@ -117,7 +121,7 @@ class _DemoGenericScreenState extends State<DemoGenericScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(goal.goalName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text(goal.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                               // Sử dụng phương thức hoạt động 2 trả về một String trạng thái khác nhau
                               Text(goal.getGoalStatus(), style: const TextStyle(color: Colors.amber, fontSize: 13)),
                             ],

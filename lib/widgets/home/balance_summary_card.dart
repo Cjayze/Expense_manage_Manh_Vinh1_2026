@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 
 class BalanceSummaryCard extends StatelessWidget {
   final String monthText;
-  final String balanceText;
+  final String availableText;
+  final String goalsAccumulatedText;
+  final String totalAssetsText;
   final double savingRate;
   final VoidCallback onTapMonth;
 
   const BalanceSummaryCard({
     super.key,
     required this.monthText,
-    required this.balanceText,
+    required this.availableText,
+    required this.goalsAccumulatedText,
+    required this.totalAssetsText,
     required this.savingRate,
     required this.onTapMonth,
   });
@@ -55,41 +59,88 @@ class BalanceSummaryCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 20),
           const Text(
-            'Số dư hiện tại',
+            'Số dư khả dụng',
             style: TextStyle(
               color: Color(0xFF6C7890),
-              fontSize: 14,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
-            balanceText,
+            availableText,
             style: const TextStyle(
               color: Color(0xFF172033),
-              fontSize: 32,
+              fontSize: 30,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Tích lũy mục tiêu',
+                      style: TextStyle(color: Color(0xFF6C7890), fontSize: 12),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      goalsAccumulatedText,
+                      style: const TextStyle(
+                        color: Color(0xFF172033),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Tổng tài sản',
+                      style: TextStyle(color: Color(0xFF6C7890), fontSize: 12),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      totalAssetsText,
+                      style: const TextStyle(
+                        color: Color(0xFF172033),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           ClipRRect(
             borderRadius: BorderRadius.circular(99),
             child: LinearProgressIndicator(
               value: savingRate,
-              minHeight: 10,
+              minHeight: 8,
               backgroundColor: Colors.white,
               valueColor: const AlwaysStoppedAnimation(
                 Color(0xFF2FC866),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             'Tỷ lệ giữ lại: $percent%',
             style: const TextStyle(
               color: Color(0xFF6C7890),
               fontWeight: FontWeight.w700,
+              fontSize: 13,
             ),
           ),
         ],
