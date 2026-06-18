@@ -23,10 +23,6 @@ void main() async {
 
   await AuthService.init();
 
-  if (AuthService.isLoggedIn.value) {
-    await DatabaseService.syncFromFirebase();
-  }
-
   runApp(const MyApp());
 }
 
