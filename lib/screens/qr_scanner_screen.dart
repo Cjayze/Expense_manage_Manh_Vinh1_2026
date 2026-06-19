@@ -46,73 +46,274 @@ class _QrScannerScreenState extends State<QrScannerScreen> with SingleTickerProv
 
   // Phân tích chuỗi QR thành dữ liệu hóa đơn
   Map<String, dynamic>? _parseRawQRCode(String rawValue) {
+    rawValue = rawValue.trim();
+
     // 1. Thử JSON (cho các ứng dụng tùy chỉnh / giả lập)
     try {
       final decoded = jsonDecode(rawValue);
       if (decoded is Map<String, dynamic> && decoded.containsKey('amount')) {
-        return decoded;
+        final amount = _parseAmount(decoded['amount'].toString());
+        if (amount != null && amount > 0) {
+          return {
+            "type": "Chi tiêu",
+            "categoryName": decoded['categoryName'] ?? "Hóa đơn",
+            "amount": amount,
+            "note": decoded['note'] ?? "Hóa đơn JSON",
+            "items": decoded['items'] is List ? decoded['items'] : [],
+            "rawData": rawValue,
+          };
+        }
       }
     } catch (_) {
       // Không phải JSON, tiếp tục xử lý
     }
 
+    // 1b. Thử phân tích cấu trúc EMV/VNPAY QR
+    final emvInvoice = _parseEmvQr(rawValue);
+    if (emvInvoice != null) {
+      return emvInvoice;
+    }
+
     // 2. Thử phân tích chuỗi hóa đơn điện tử Tổng cục Thuế (phân cách bằng dấu |)
     // VD: 1|0108365287|1|1C23TTA|0000123|2023-11-20|450000|45000|...
     if (rawValue.contains('|')) {
-      final parts = rawValue.split('|');
-      double? totalAmount;
-      String note = 'Hóa đơn điện tử';
-      
-      // Tìm số lớn nhất làm tổng tiền (loại trừ các chuỗi quá dài như MST)
-      List<double> numbers = [];
-      for (var p in parts) {
-        if (RegExp(r'^\d+(\.\d+)?$').hasMatch(p.trim())) {
-           if (p.trim().length < 12) { 
-             numbers.add(double.parse(p.trim()));
-           }
-        }
-      }
-      if (numbers.isNotEmpty) {
-        totalAmount = numbers.reduce((a, b) => a > b ? a : b);
-      }
-
-      // Có thể trích xuất MST hoặc Số HĐ từ parts nếu cần
-      if (parts.length > 4) {
-        note = 'Hóa đơn Thuế (Mã: ${parts[4]})';
-      }
-
+      final parts = rawValue.split('|').map((part) => part.trim()).toList();
+      final totalAmount = _parseTaxInvoiceAmount(parts);
       if (totalAmount != null && totalAmount > 0) {
+        var note = 'Hóa đơn điện tử';
+        if (parts.length > 4 && parts[4].isNotEmpty) {
+          note = 'Hóa đơn Thuế (Mã: ${parts[4]})';
+        }
         return {
           "type": "Chi tiêu",
           "categoryName": "Hóa đơn",
           "amount": totalAmount,
           "note": note,
-          "items": []
+          "items": [],
+          "rawData": rawValue,
         };
       }
     }
 
     // 3. Thử phân tích VietQR hoặc URL tra cứu hóa đơn
-    if (rawValue.startsWith('http')) {
-       final uri = Uri.tryParse(rawValue);
-       if (uri != null && uri.queryParameters.isNotEmpty) {
-         final amountStr = uri.queryParameters['amount'] ?? uri.queryParameters['tg'] ?? uri.queryParameters['total'];
-         if (amountStr != null) {
-            final amount = double.tryParse(amountStr);
-            if (amount != null) {
-               return {
-                  "type": "Chi tiêu",
-                  "categoryName": "Hóa đơn",
-                  "amount": amount,
-                  "note": "Tra cứu HĐ: ${uri.host}",
-                  "items": []
-               };
-            }
-         }
-       }
+    final uri = Uri.tryParse(rawValue);
+    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
+      final amount = _findAmountInUri(uri);
+      if (amount != null && amount > 0) {
+        return {
+          "type": "Chi tiêu",
+          "categoryName": "Hóa đơn",
+          "amount": amount,
+          "note": uri.host.isNotEmpty ? "Tra cứu HĐ: ${uri.host}" : "Hóa đơn VietQR",
+          "items": [],
+          "rawData": rawValue,
+        };
+      }
+    }
+
+    // 4. Thử phân tích chuỗi key=value hay nội dung số thuần túy
+    final fallback = _parseKeyValueInvoice(rawValue);
+    if (fallback != null) {
+      return fallback;
+    }
+
+    // 5. Lấy số tiền hợp lý nhất trong chuỗi nếu không có cấu trúc rõ ràng
+    final amount = _findAmountInText(rawValue);
+    if (amount != null && amount > 0) {
+      return {
+        "type": "Chi tiêu",
+        "categoryName": "Hóa đơn",
+        "amount": amount,
+        "note": "Hóa đơn quét tự động",
+        "items": [],
+        "rawData": rawValue,
+      };
     }
 
     return null;
+  }
+
+  double? _parseAmount(String? value) {
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+
+    var cleaned = value.trim();
+    cleaned = cleaned.replaceAll(RegExp(r'[\s\u00A0]|đ|₫|vnd|vnđ', caseSensitive: false), '');
+    if (cleaned.isEmpty) {
+      return null;
+    }
+
+    final hasDot = cleaned.contains('.');
+    final hasComma = cleaned.contains(',');
+
+    if (hasDot && hasComma) {
+      final lastDot = cleaned.lastIndexOf('.');
+      final lastComma = cleaned.lastIndexOf(',');
+      if (lastDot > lastComma) {
+        cleaned = cleaned.replaceAll(',', '');
+      } else {
+        cleaned = cleaned.replaceAll('.', '');
+        cleaned = cleaned.replaceAll(',', '.');
+      }
+    } else if (hasDot) {
+      final parts = cleaned.split('.');
+      if (parts.length > 1) {
+        final last = parts.last;
+        if (last.length == 3) {
+          cleaned = parts.join('');
+        } else {
+          cleaned = parts.take(parts.length - 1).join('') + '.' + last;
+        }
+      }
+    } else if (hasComma) {
+      final parts = cleaned.split(',');
+      if (parts.length > 1) {
+        final last = parts.last;
+        if (last.length == 3) {
+          cleaned = parts.join('');
+        } else {
+          cleaned = parts.take(parts.length - 1).join('') + '.' + last;
+        }
+      }
+    }
+
+    cleaned = cleaned.replaceAll(RegExp(r'[^0-9\.]'), '');
+    if (cleaned.isEmpty) {
+      return null;
+    }
+
+    return double.tryParse(cleaned);
+  }
+
+  double? _parseTaxInvoiceAmount(List<String> parts) {
+    if (parts.length >= 7) {
+      final amount = _parseAmount(parts[6]);
+      if (amount != null && amount > 0) {
+        return amount;
+      }
+    }
+    return null;
+  }
+
+  double? _findAmountInUri(Uri uri) {
+    final candidateKeys = RegExp(r'amount|total|tg|sum|price|value|tien|sotien', caseSensitive: false);
+    final amounts = <double>[];
+
+    for (final entry in uri.queryParametersAll.entries) {
+      if (candidateKeys.hasMatch(entry.key)) {
+        for (final rawValue in entry.value) {
+          final amount = _parseAmount(rawValue);
+          if (amount != null && amount > 0) {
+            amounts.add(amount);
+          }
+        }
+      }
+    }
+
+    for (final segment in uri.pathSegments) {
+      final amount = _parseAmount(segment);
+      if (amount != null && amount > 0) {
+        amounts.add(amount);
+      }
+    }
+
+    if (amounts.isEmpty) {
+      return null;
+    }
+    return amounts.reduce((a, b) => a > b ? a : b);
+  }
+
+  Map<String, dynamic>? _parseEmvQr(String data) {
+    final segments = <String, String>{};
+    var index = 0;
+
+    while (index + 4 <= data.length) {
+      final tag = data.substring(index, index + 2);
+      final length = int.tryParse(data.substring(index + 2, index + 4));
+      if (length == null || index + 4 + length > data.length) break;
+      final value = data.substring(index + 4, index + 4 + length);
+      segments[tag] = value;
+      index += 4 + length;
+    }
+
+    if (segments.isEmpty) {
+      return null;
+    }
+
+    // VNPAY/EMV thường dùng tag 54 cho tổng tiền và tag 59 cho tên nhà cung cấp
+    final amount = _parseAmount(segments['54']);
+    final storeName = segments['59']?.trim();
+
+    if (amount != null && amount > 0) {
+      return {
+        "type": "Chi tiêu",
+        "categoryName": "Hóa đơn",
+        "amount": amount,
+        "note": storeName != null && storeName.isNotEmpty ? "VNPAY: $storeName" : "Hóa đơn VNPAY",
+        "items": [],
+        "rawData": data,
+      };
+    }
+
+    return null;
+  }
+
+  Map<String, dynamic>? _parseKeyValueInvoice(String rawValue) {
+    final separators = RegExp(r'[&;\n\r]');
+    final parts = rawValue.split(separators);
+    final values = <String, String>{};
+
+    for (var part in parts) {
+      if (part.contains('=')) {
+        final partsPair = part.split('=');
+        if (partsPair.length >= 2) {
+          final key = partsPair.first.trim().toLowerCase();
+          final value = partsPair.sublist(1).join('=').trim();
+          values[key] = value;
+        }
+      }
+    }
+
+    if (values.isNotEmpty) {
+      final amountKey = values.keys.firstWhere(
+        (key) => RegExp(r'amount|total|tg|sum|price|value|tien|sotien', caseSensitive: false).hasMatch(key),
+        orElse: () => '',
+      );
+      if (amountKey.isNotEmpty) {
+        final amount = _parseAmount(values[amountKey]);
+        if (amount != null && amount > 0) {
+          return {
+            "type": "Chi tiêu",
+            "categoryName": "Hóa đơn",
+            "amount": amount,
+            "note": "Hóa đơn quét key/value",
+            "items": [],
+            "rawData": rawValue,
+          };
+        }
+      }
+    }
+    return null;
+  }
+
+  double? _findAmountInText(String rawValue) {
+    final matches = RegExp(r'\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?').allMatches(rawValue);
+    final amounts = matches
+        .map((match) => _parseAmount(match.group(0)))
+        .where((amount) => amount != null && amount > 0)
+        .cast<double>()
+        .toList();
+
+    if (amounts.isEmpty) {
+      return null;
+    }
+
+    final filtered = amounts.where((value) => value < 1900 || value > 2100).toList();
+    if (filtered.isNotEmpty) {
+      return filtered.reduce((a, b) => a > b ? a : b);
+    }
+    return amounts.reduce((a, b) => a > b ? a : b);
   }
 
   void _processQRCode(String rawValue) {
@@ -396,6 +597,11 @@ class _QrScannerScreenState extends State<QrScannerScreen> with SingleTickerProv
                                 for (var item in items) {
                                   sb.write("\n- ${item['name']} x${item['qty']}: ${formatter.format(item['price'])}đ");
                                 }
+                              }
+
+                              if (invoiceData['rawData'] != null && invoiceData['rawData'].toString().isNotEmpty) {
+                                sb.write("\n\nRaw QR: ");
+                                sb.write(invoiceData['rawData'].toString());
                               }
 
                               final tx = TransactionModel(
